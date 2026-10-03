@@ -200,6 +200,31 @@ class ProjectServiceTest {
     }
 
     @Test
+    void deletesExistingProject() {
+        UUID projectId = UUID.randomUUID();
+        Project project = mock(Project.class);
+
+        when(projectRepository.findById(projectId)).thenReturn(java.util.Optional.of(project));
+
+        projectService.delete(projectId);
+
+        verify(projectRepository).delete(project);
+    }
+
+    @Test
+    void rejectsDeleteWhenProjectDoesNotExist() {
+        UUID projectId = UUID.randomUUID();
+
+        when(projectRepository.findById(projectId)).thenReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> projectService.delete(projectId))
+                .isInstanceOf(java.util.NoSuchElementException.class)
+                .hasMessage("Không tìm thấy dự án");
+
+        verify(projectRepository, never()).delete(any(Project.class));
+    }
+
+    @Test
     void findsProjectsUsingFilters() {
         org.springframework.data.domain.Pageable pageable = PageRequest.of(0, 20);
         UUID managerId = UUID.randomUUID();
