@@ -49,7 +49,7 @@ class FinanceDashboardServiceTest {
         when(invoiceRepository.findAll()).thenReturn(List.of(paidInvoice, openInvoice));
         when(paymentRepository.sumAmountByInvoiceId(paidId)).thenReturn(new BigDecimal("1000000"));
         when(paymentRepository.sumAmountByInvoiceId(openId)).thenReturn(new BigDecimal("500000"));
-        when(expenseRepository.sumAmountByStatusAndDateBetween(eq(ExpenseStatus.RECORDED), any(LocalDate.class), any(LocalDate.class)))
+        when(expenseRepository.sumAmountByStatus(eq(ExpenseStatus.RECORDED)))
                 .thenReturn(new BigDecimal("400000"));
 
         var result = service.summary();
