@@ -5,7 +5,8 @@ const navigation = [
   { label: 'Tổng quan', to: '/', icon: LayoutDashboard },
   { label: 'Nhân sự', to: '/employees', icon: Users },
   { label: 'Dự án', to: '/projects', icon: BriefcaseBusiness },
-  { label: 'Tài chính', to: '/finance', icon: CircleDollarSign },
+  { label: 'Hóa đơn', to: '/finance', icon: CircleDollarSign },
+  { label: 'Chi phí', to: '/finance/expenses', icon: CircleDollarSign },
   { label: 'Khách hàng', to: '/customers', icon: Users },
   { label: 'Báo cáo', to: '/reports', icon: FileBarChart },
 ];
