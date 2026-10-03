@@ -13,7 +13,6 @@ public record CreateProjectRequest(
         @Size(max = 2000) String description,
         @NotNull UUID managerId,
         UUID customerId,
-        UUID customerId,
         @NotNull LocalDate startDate,
         @NotNull LocalDate endDate,
         @DecimalMin(value = "0.0") BigDecimal budget,
