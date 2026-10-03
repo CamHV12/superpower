@@ -39,10 +39,11 @@ public class ExpenseService {
     }
 
     @Transactional
-    public void delete(UUID id) {
+    public ExpenseResponse cancel(UUID id) {
         Expense expense = repository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy khoản chi"));
-        repository.delete(expense);
+        expense.cancel();
+        return toResponse(repository.save(expense));
     }
 
     private ExpenseResponse toResponse(Expense expense) {
