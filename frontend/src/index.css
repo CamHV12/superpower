@@ -8,6 +8,14 @@
   text-rendering: optimizeLegibility;
 }
 
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -16,4 +24,10 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+}
+
+button,
+input,
+select {
+  font: inherit;
 }
