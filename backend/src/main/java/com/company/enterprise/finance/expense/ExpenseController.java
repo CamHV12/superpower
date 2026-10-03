@@ -35,9 +35,8 @@ public class ExpenseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
-        service.delete(id);
+    @PatchMapping("/{id}/cancel")
+    public ExpenseResponse cancel(@PathVariable UUID id) {
+        return service.cancel(id);
     }
 }
