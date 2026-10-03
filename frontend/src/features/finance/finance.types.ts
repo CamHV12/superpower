@@ -2,6 +2,7 @@ import type { PageResponse } from '../projects/projects.types';
 
 export type InvoiceStatus = 'DRAFT' | 'SENT' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'CANCELLED';
 export type PaymentMethod = 'CASH' | 'BANK_TRANSFER' | 'CREDIT_CARD' | 'OTHER';
+export type ExpenseStatus = 'RECORDED' | 'CANCELLED';
 
 export interface InvoiceItem {
   id: string;
@@ -50,3 +51,16 @@ export interface CustomerOption {
 }
 
 export type InvoicePage = PageResponse<Invoice>;
+
+export interface Expense {
+  id: string;
+  category: string;
+  amount: number;
+  expenseDate: string;
+  vendor?: string | null;
+  paymentMethod: PaymentMethod;
+  notes?: string | null;
+  status: ExpenseStatus;
+}
+
+export type ExpensePage = PageResponse<Expense>;
