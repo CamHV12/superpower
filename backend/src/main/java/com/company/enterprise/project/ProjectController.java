@@ -2,6 +2,7 @@ package com.company.enterprise.project;
 
 import com.company.enterprise.project.dto.CreateProjectRequest;
 import com.company.enterprise.project.dto.ProjectResponse;
+import com.company.enterprise.project.dto.UpdateProjectRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +37,13 @@ public class ProjectController {
             @Valid @RequestBody CreateProjectRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(projectService.createResponse(request));
+    }
+
+    @PutMapping("/{id}")
+    public ProjectResponse update(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateProjectRequest request) {
+        return projectService.update(id, request);
     }
 
     @PatchMapping("/{id}/progress")
