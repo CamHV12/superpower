@@ -15,6 +15,13 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
             select coalesce(sum(e.amount), 0)
             from Expense e
             where e.status = :status
+            """)
+    BigDecimal sumAmountByStatus(@Param("status") ExpenseStatus status);
+
+    @Query("""
+            select coalesce(sum(e.amount), 0)
+            from Expense e
+            where e.status = :status
               and e.expenseDate between :from and :to
             """)
     BigDecimal sumAmountByStatusAndDateBetween(
