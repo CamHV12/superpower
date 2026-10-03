@@ -6,6 +6,7 @@ import { EmployeesPage } from '../features/employees/EmployeesPage';
 import { ProtectedRoute } from './ProtectedRoute';
 import { ProjectsPage } from '../features/projects/ProjectsPage';
 import { CustomersPage } from '../features/customers/CustomersPage';
+import { CustomerDetailPage } from '../features/customers/CustomerDetailPage';
 import { ProjectDetailPage } from '../features/projects/ProjectDetailPage';
 
 function Page({ title }: { title: string }) {
@@ -24,6 +25,7 @@ export function AppRoutes() {
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/projects/:id" element={<ProjectDetailPage />} />
           <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/customers/:id" element={<CustomerDetailPage />} />
           <Route path="/finance" element={<Page title="Tài chính" />} />
           <Route path="/reports" element={<Page title="Báo cáo" />} />
         </Route>
