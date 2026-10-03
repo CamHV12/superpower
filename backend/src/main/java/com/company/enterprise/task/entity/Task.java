@@ -114,6 +114,23 @@ public class Task {
         this.progress = progress;
     }
 
+    public void update(String title, String description, Employee assignee,
+                       LocalDate startDate, LocalDate dueDate,
+                       BigDecimal estimatedHours, BigDecimal actualHours,
+                       TaskStatus status, TaskPriority priority, int progress) {
+        validateProgress(progress);
+        this.title = title;
+        this.description = description;
+        this.assignee = assignee;
+        this.startDate = startDate;
+        this.dueDate = dueDate;
+        this.estimatedHours = estimatedHours;
+        this.actualHours = actualHours;
+        this.status = status;
+        this.priority = priority;
+        this.progress = progress;
+    }
+
     private void validateProgress(int progress) {
         if (progress < 0 || progress > 100) {
             throw new IllegalArgumentException("Tiến độ phải nằm trong khoảng từ 0 đến 100");
