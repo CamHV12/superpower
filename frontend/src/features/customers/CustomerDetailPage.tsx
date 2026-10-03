@@ -7,18 +7,21 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Button } from '../../components/ui/Button';
 import { customersService } from './customers.service';
 import type { Customer } from './customers.types';
+import { projectsService } from '../projects/projects.service';
+import type { Project } from '../projects/projects.types';
 
 export function CustomerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    customersService.get(id)
-      .then(setCustomer)
+    Promise.all([customersService.get(id), projectsService.list({ customerId: id, size: 50 })])
+      .then(([customerData, projectPage]) => { setCustomer(customerData); setProjects(projectPage.content); })
       .catch(() => setError('Không thể tải thông tin khách hàng.'))
       .finally(() => setLoading(false));
   }, [id]);
@@ -73,9 +76,18 @@ export function CustomerDetailPage() {
       </div>
 
       <Card>
-        <h2 className="font-semibold">Dự án của khách hàng</h2>
-        <div className="mt-4 rounded-xl border border-dashed border-slate-200 p-6 text-sm text-slate-500 dark:border-slate-700">
-          Chưa liên kết dự án với khách hàng. Quan hệ Customer → Project sẽ được triển khai ở bước nghiệp vụ dự án tiếp theo.
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold">Dự án của khách hàng</h2>
+          <span className="text-xs text-slate-500">{projects.length} dự án</span>
+        </div>
+        <div className="mt-4 divide-y divide-slate-100 dark:divide-slate-800">
+          {projects.map((project) => (
+            <Link key={project.id} to={`/projects/${project.id}`} className="flex items-center justify-between gap-4 py-4 hover:text-blue-600">
+              <div><p className="font-medium">{project.name}</p><p className="text-xs text-slate-500">{project.code} · {project.progress}%</p></div>
+              <Badge variant="neutral">{project.status}</Badge>
+            </Link>
+          ))}
+          {projects.length === 0 && <p className="py-6 text-sm text-slate-500">Khách hàng chưa có dự án nào.</p>}
         </div>
       </Card>
     </div>
