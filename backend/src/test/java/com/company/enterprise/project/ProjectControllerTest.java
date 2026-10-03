@@ -1,6 +1,7 @@
 package com.company.enterprise.project;
 
 import com.company.enterprise.project.dto.ProjectResponse;
+import com.company.enterprise.project.dto.UpdateProjectRequest;
 import com.company.enterprise.project.entity.ProjectPriority;
 import com.company.enterprise.project.entity.ProjectStatus;
 import org.junit.jupiter.api.Test;
@@ -63,4 +64,41 @@ class ProjectControllerTest {
                 .andExpect(jsonPath("$.content[0].status").value("DRAFT"))
                 .andExpect(jsonPath("$.content[0].progress").value(0));
     }
+    @Test
+    void updatesProject() throws Exception {
+        UUID id = UUID.randomUUID();
+        ProjectResponse response = new ProjectResponse(
+                id, "PRJ-001", "Updated Project", "Mô tả mới",
+                UUID.randomUUID(), "Nguyễn Văn A",
+                ProjectStatus.ACTIVE, ProjectPriority.URGENT,
+                LocalDate.of(2026, 10, 5), LocalDate.of(2026, 12, 31),
+                new BigDecimal("750000000"), 40,
+                Instant.parse("2026-10-03T08:00:00Z"),
+                Instant.parse("2026-10-03T08:00:00Z")
+        );
+
+        when(projectService.update(any(UUID.class), any(UpdateProjectRequest.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/projects/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Updated Project",
+                                  "description": "Mô tả mới",
+                                  "managerId": "00000000-0000-0000-0000-000000000001",
+                                  "startDate": "2026-10-05",
+                                  "endDate": "2026-12-31",
+                                  "budget": 750000000,
+                                  "status": "ACTIVE",
+                                  "priority": "URGENT",
+                                  "progress": 40
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Updated Project"))
+                .andExpect(jsonPath("$.status").value("ACTIVE"))
+                .andExpect(jsonPath("$.progress").value(40));
+    }
+
 }
