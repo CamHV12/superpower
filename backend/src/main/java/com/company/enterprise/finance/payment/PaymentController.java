@@ -7,6 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
@@ -14,6 +17,11 @@ public class PaymentController {
 
     public PaymentController(PaymentService service) {
         this.service = service;
+    }
+
+    @GetMapping
+    public List<PaymentResponse> findByInvoice(@RequestParam UUID invoiceId) {
+        return service.findByInvoiceId(invoiceId);
     }
 
     @PostMapping
