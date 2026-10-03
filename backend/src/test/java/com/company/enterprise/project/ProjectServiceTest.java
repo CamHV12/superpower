@@ -17,6 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
+import static org.mockito.ArgumentMatchers.eq;
+import org.springframework.data.domain.PageRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -195,6 +197,30 @@ class ProjectServiceTest {
         assertThatThrownBy(() -> projectService.update(projectId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Ngày bắt đầu không được sau ngày kết thúc");
+    }
+
+    @Test
+    void findsProjectsUsingFilters() {
+        org.springframework.data.domain.Pageable pageable = PageRequest.of(0, 20);
+        UUID managerId = UUID.randomUUID();
+
+        when(projectRepository.findAll(
+                any(org.springframework.data.jpa.domain.Specification.class),
+                eq(pageable)
+        )).thenReturn(new org.springframework.data.domain.PageImpl<>(java.util.List.of()));
+
+        projectService.findAll(
+                pageable,
+                ProjectStatus.ACTIVE,
+                ProjectPriority.HIGH,
+                managerId,
+                "dashboard"
+        );
+
+        verify(projectRepository).findAll(
+                any(org.springframework.data.jpa.domain.Specification.class),
+                eq(pageable)
+        );
     }
 
 }
