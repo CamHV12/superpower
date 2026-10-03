@@ -29,6 +29,28 @@ class FinanceDashboardServiceTest {
     @Mock ExpenseRepository expenseRepository;
 
     @Test
+    void calculatesMonthlyPaidExpenseAndNetCashFlow() {
+        FinanceDashboardService service = new FinanceDashboardService(invoiceRepository, paymentRepository, expenseRepository);
+
+        var payment = org.mockito.Mockito.mock(com.company.enterprise.finance.payment.entity.Payment.class);
+        when(payment.getPaymentDate()).thenReturn(LocalDate.now().withDayOfMonth(1));
+        when(payment.getAmount()).thenReturn(new BigDecimal("1000000"));
+        when(paymentRepository.findByPaymentDateBetweenOrderByPaymentDateAsc(any(), any()))
+                .thenReturn(List.of(payment));
+
+        when(expenseRepository.sumAmountByStatusAndDateBetween(
+                eq(ExpenseStatus.RECORDED), any(), any()))
+                .thenReturn(new BigDecimal("400000"));
+
+        var result = service.monthly(1);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).paidAmount()).isEqualByComparingTo("1000000");
+        assertThat(result.get(0).expenseAmount()).isEqualByComparingTo("400000");
+        assertThat(result.get(0).netCashFlow()).isEqualByComparingTo("600000");
+    }
+
+    @Test
     void calculatesFinanceSummaryFromInvoicesAndPayments() {
         FinanceDashboardService service = new FinanceDashboardService(invoiceRepository, paymentRepository, expenseRepository);
 
