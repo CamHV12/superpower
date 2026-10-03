@@ -14,6 +14,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -149,5 +153,127 @@ class TaskServiceTest {
                 .hasMessage("Không tìm thấy nhân viên được giao");
 
         verify(taskRepository, never()).save(any(Task.class));
+    }
+    @Test
+    void listsTasksWithinProjectWithFiltersAndPagination() {
+        UUID projectId = UUID.randomUUID();
+        Pageable pageable = PageRequest.of(0, 10);
+        when(projectRepository.existsById(projectId)).thenReturn(true);
+        when(taskRepository.findAll(any(Specification.class), eq(pageable)))
+                .thenReturn(new PageImpl<>(java.util.List.of()));
+
+        var result = taskService.findAll(
+                projectId,
+                pageable,
+                TaskStatus.IN_PROGRESS,
+                TaskPriority.HIGH,
+                UUID.randomUUID(),
+                "login"
+        );
+
+        assertThat(result).isEmpty();
+        verify(projectRepository).existsById(projectId);
+        verify(taskRepository).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void rejectsTaskListWhenProjectDoesNotExist() {
+        UUID projectId = UUID.randomUUID();
+        when(projectRepository.existsById(projectId)).thenReturn(false);
+
+        assertThatThrownBy(() -> taskService.findAll(
+                projectId,
+                PageRequest.of(0, 10),
+                null,
+                null,
+                null,
+                null
+        ))
+                .isInstanceOf(java.util.NoSuchElementException.class)
+                .hasMessage("Không tìm thấy dự án");
+
+        verifyNoInteractions(taskRepository);
+    }
+
+    @Test
+    void rejectsAccessToTaskFromAnotherProject() {
+        UUID projectId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+
+        when(taskRepository.findByIdAndProjectId(taskId, projectId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> taskService.findById(projectId, taskId))
+                .isInstanceOf(java.util.NoSuchElementException.class)
+                .hasMessage("Không tìm thấy công việc");
+
+        verify(taskRepository).findByIdAndProjectId(taskId, projectId);
+    }
+
+    @Test
+    void updatesTaskProgress() {
+        UUID projectId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+        Task task = mock(Task.class);
+
+        when(taskRepository.findByIdAndProjectId(taskId, projectId)).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(task);
+
+        Task result = taskService.updateProgress(projectId, taskId, 75);
+
+        assertThat(result).isSameAs(task);
+        verify(task).setProgress(75);
+        verify(taskRepository).save(task);
+    }
+
+    @Test
+    void rejectsInvalidTaskProgress() {
+        UUID projectId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> taskService.updateProgress(projectId, taskId, 101))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Tiến độ phải nằm trong khoảng từ 0 đến 100");
+
+        verifyNoInteractions(taskRepository);
+    }
+
+    @Test
+    void rejectsUpdateWhenTaskDoesNotBelongToProject() {
+        UUID projectId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+        var request = new com.company.enterprise.task.dto.UpdateTaskRequest(
+                "Updated task",
+                null,
+                UUID.randomUUID(),
+                LocalDate.of(2026, 10, 5),
+                LocalDate.of(2026, 10, 10),
+                new BigDecimal("4"),
+                BigDecimal.ZERO,
+                TaskStatus.IN_PROGRESS,
+                TaskPriority.HIGH,
+                50
+        );
+
+        when(taskRepository.findByIdAndProjectId(taskId, projectId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> taskService.update(projectId, taskId, request))
+                .isInstanceOf(java.util.NoSuchElementException.class)
+                .hasMessage("Không tìm thấy công việc");
+
+        verifyNoInteractions(employeeRepository);
+    }
+
+    @Test
+    void rejectsDeleteWhenTaskDoesNotBelongToProject() {
+        UUID projectId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+
+        when(taskRepository.findByIdAndProjectId(taskId, projectId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> taskService.delete(projectId, taskId))
+                .isInstanceOf(java.util.NoSuchElementException.class)
+                .hasMessage("Không tìm thấy công việc");
+
+        verify(taskRepository, never()).delete(any(Task.class));
     }
 }
