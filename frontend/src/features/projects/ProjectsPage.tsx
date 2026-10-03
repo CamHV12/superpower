@@ -36,6 +36,8 @@ const money = (value: number) =>
 
 export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [keyword, setKeyword] = useState('');
   const [status, setStatus] = useState<ProjectStatus | ''>('');
@@ -63,7 +65,7 @@ export function ProjectsPage() {
     try {
       const [projectPage, employeePage] = await Promise.all([
         projectsService.list({
-          page: 0,
+          page,
           size: 10,
           keyword,
           status: status || undefined,
@@ -73,6 +75,7 @@ export function ProjectsPage() {
         projectsService.listEmployees(),
       ]);
       setProjects(projectPage.content);
+      setTotalPages(projectPage.totalPages);
       setEmployees(employeePage.content.filter((employee) => employee.active));
     } catch {
       setError('Không thể tải danh sách dự án. Vui lòng thử lại.');
@@ -82,8 +85,12 @@ export function ProjectsPage() {
   };
 
   useEffect(() => {
-    void load();
+    setPage(0);
   }, [keyword, status, priority, managerId]);
+
+  useEffect(() => {
+    void load();
+  }, [keyword, status, priority, managerId, page]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -250,6 +257,15 @@ export function ProjectsPage() {
               </tbody>
             </table>
           </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-sm dark:border-slate-800">
+              <span className="text-slate-500">Trang {page + 1} / {totalPages}</span>
+              <div className="flex gap-2">
+                <Button variant="secondary" disabled={page === 0} onClick={() => setPage((value) => value - 1)}>Trước</Button>
+                <Button variant="secondary" disabled={page >= totalPages - 1} onClick={() => setPage((value) => value + 1)}>Sau</Button>
+              </div>
+            </div>
+          )}
         </Card>
       )}
     </div>
