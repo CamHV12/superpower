@@ -26,13 +26,14 @@ export function DashboardPage() {
   const periodLabel = useMemo(() => period, [period]);
 
   useEffect(() => {
-    Promise.all([financeService.summary(), financeService.monthly(6)])
+    const months = period.startsWith('12') ? 12 : 6;
+    Promise.all([financeService.summary(), financeService.monthly(months)])
       .then(([summaryData, monthlyData]) => {
         setSummary(summaryData);
         setMonthly(monthlyData);
       })
       .catch(() => setFinanceError('Chưa thể tải dữ liệu tài chính.'));
-  }, []);
+  }, [period]);
 
   return (
     <div className="space-y-6">
