@@ -1,5 +1,5 @@
 import { api } from '../../services/api';
-import type { CustomerOption, Invoice, InvoicePage, InvoiceStatus, Payment, PaymentMethod } from './finance.types';
+import type { CustomerOption, Expense, ExpensePage, Invoice, InvoicePage, InvoiceStatus, Payment, PaymentMethod } from './finance.types';
 
 export interface FinanceSummary {
   totalInvoiced: number;
@@ -7,6 +7,8 @@ export interface FinanceSummary {
   totalReceivable: number;
   overdueInvoices: number;
   overdueAmount: number;
+  totalExpense: number;
+  netCashFlow: number;
 }
 
 export interface FinanceMonthly {
@@ -77,6 +79,29 @@ export const financeService = {
   }) {
     const response = await api.post<Payment>('/payments', payload);
     return response.data;
+  },
+
+  async listExpenses(params: { page?: number; size?: number } = {}) {
+    const response = await api.get<ExpensePage>('/expenses', {
+      params: cleanParams({ page: 0, size: 10, ...params }),
+    });
+    return response.data;
+  },
+
+  async createExpense(payload: {
+    category: string;
+    amount: number;
+    expenseDate: string;
+    vendor?: string;
+    paymentMethod: PaymentMethod;
+    notes?: string;
+  }) {
+    const response = await api.post<Expense>('/expenses', payload);
+    return response.data;
+  },
+
+  async deleteExpense(id: string) {
+    await api.delete('/expenses/' + id);
   },
 
   async listCustomers(size = 100) {
