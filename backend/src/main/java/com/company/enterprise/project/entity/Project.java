@@ -117,6 +117,13 @@ public class Project {
                        com.company.enterprise.employee.entity.Employee manager,
                        ProjectPriority priority, LocalDate startDate, LocalDate endDate,
                        BigDecimal budget, ProjectStatus status, int progress) {
+        update(name, description, manager, this.customer, priority, startDate, endDate, budget, status, progress);
+    }
+
+    public void update(String name, String description,
+                       com.company.enterprise.employee.entity.Employee manager, Customer customer,
+                       ProjectPriority priority, LocalDate startDate, LocalDate endDate,
+                       BigDecimal budget, ProjectStatus status, int progress) {
         this.name = name;
         this.description = description;
         this.manager = manager;
