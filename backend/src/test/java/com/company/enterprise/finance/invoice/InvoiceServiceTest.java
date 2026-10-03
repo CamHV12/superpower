@@ -8,6 +8,7 @@ import com.company.enterprise.finance.invoice.entity.Invoice;
 import com.company.enterprise.finance.invoice.repository.InvoiceRepository;
 import com.company.enterprise.project.entity.Project;
 import com.company.enterprise.project.repository.ProjectRepository;
+import com.company.enterprise.finance.payment.repository.PaymentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,6 +31,7 @@ class InvoiceServiceTest {
     @Mock InvoiceRepository invoiceRepository;
     @Mock CustomerRepository customerRepository;
     @Mock ProjectRepository projectRepository;
+    @Mock PaymentRepository paymentRepository;
     @InjectMocks InvoiceService service;
 
     @Test
@@ -48,6 +50,7 @@ class InvoiceServiceTest {
         when(invoiceRepository.existsByInvoiceNumber("INV-001")).thenReturn(false);
         when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
         when(invoiceRepository.save(any(Invoice.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(paymentRepository.sumAmountByInvoiceId(any())).thenReturn(BigDecimal.ZERO);
 
         var result = service.create(request);
 
@@ -55,6 +58,8 @@ class InvoiceServiceTest {
         assertThat(result.taxAmount()).isEqualByComparingTo("100000");
         assertThat(result.discountAmount()).isEqualByComparingTo("50000");
         assertThat(result.totalAmount()).isEqualByComparingTo("2550000");
+        assertThat(result.paidAmount()).isEqualByComparingTo("0");
+        assertThat(result.remainingAmount()).isEqualByComparingTo("2550000");
         assertThat(result.items()).hasSize(2);
         assertThat(result.status()).hasToString("DRAFT");
     }
