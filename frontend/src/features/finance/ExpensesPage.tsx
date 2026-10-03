@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Ban, Plus } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -76,13 +76,14 @@ export function ExpensesPage() {
     }
   };
 
-  const remove = async (expense: Expense) => {
-    if (!window.confirm('Bạn có chắc muốn xóa khoản chi này?')) return;
+  const cancel = async (expense: Expense) => {
+    if (expense.status === 'CANCELLED') return;
+    if (!window.confirm('Bạn có chắc muốn hủy khoản chi này? Dữ liệu sẽ được giữ lại để đảm bảo lịch sử tài chính.')) return;
     try {
-      await financeService.deleteExpense(expense.id);
+      await financeService.cancelExpense(expense.id);
       await load();
     } catch {
-      setError('Không thể xóa khoản chi.');
+      setError('Không thể hủy khoản chi.');
     }
   };
 
@@ -137,7 +138,7 @@ export function ExpensesPage() {
          <div className="overflow-x-auto">
            <table className="w-full min-w-[850px] text-left text-sm">
              <thead className="bg-slate-50 dark:bg-slate-900">
-               <tr><th className="px-5 py-3">Ngày</th><th className="px-5 py-3">Danh mục</th><th className="px-5 py-3">Nhà cung cấp</th><th className="px-5 py-3">Phương thức</th><th className="px-5 py-3">Số tiền</th><th className="px-5 py-3">Trạng thái</th><th className="px-5 py-3">Xóa</th></tr>
+               <tr><th className="px-5 py-3">Ngày</th><th className="px-5 py-3">Danh mục</th><th className="px-5 py-3">Nhà cung cấp</th><th className="px-5 py-3">Phương thức</th><th className="px-5 py-3">Số tiền</th><th className="px-5 py-3">Trạng thái</th><th className="px-5 py-3">Thao tác</th></tr>
              </thead>
              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                {items.map(item => <tr key={item.id}>
@@ -147,7 +148,7 @@ export function ExpensesPage() {
                  <td className="px-5 py-4">{methods[item.paymentMethod]}</td>
                  <td className="px-5 py-4 font-semibold">{money(item.amount)}</td>
                  <td className="px-5 py-4"><Badge variant={item.status === 'RECORDED' ? 'success' : 'danger'}>{item.status === 'RECORDED' ? 'Đã ghi nhận' : 'Đã hủy'}</Badge></td>
-                 <td className="px-5 py-4"><Button variant="ghost" onClick={() => void remove(item)}><Trash2 className="size-4" />Xóa</Button></td>
+                 <td className="px-5 py-4"><Button variant="ghost" disabled={item.status === 'CANCELLED'} onClick={() => void cancel(item)}><Ban className="size-4" />Hủy</Button></td>
                </tr>)}
              </tbody>
            </table>
