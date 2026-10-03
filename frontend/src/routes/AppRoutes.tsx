@@ -10,6 +10,7 @@ import { CustomerDetailPage } from '../features/customers/CustomerDetailPage';
 import { ProjectDetailPage } from '../features/projects/ProjectDetailPage';
 import { InvoicesPage } from '../features/finance/InvoicesPage';
 import { InvoiceDetailPage } from '../features/finance/InvoiceDetailPage';
+import { ExpensesPage } from '../features/finance/ExpensesPage';
 
 function Page({ title }: { title: string }) {
   return <section><h1 className="text-2xl font-bold">{title}</h1><p className="mt-2 text-slate-500">Module đang được xây dựng.</p></section>;
@@ -29,6 +30,7 @@ export function AppRoutes() {
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/customers/:id" element={<CustomerDetailPage />} />
           <Route path="/finance" element={<InvoicesPage />} />
+          <Route path="/finance/expenses" element={<ExpensesPage />} />
           <Route path="/finance/invoices/:id" element={<InvoiceDetailPage />} />
           <Route path="/reports" element={<Page title="Báo cáo" />} />
         </Route>
