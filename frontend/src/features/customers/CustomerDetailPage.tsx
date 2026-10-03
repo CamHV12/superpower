@@ -20,7 +20,7 @@ export function CustomerDetailPage() {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([customersService.get(id), projectsService.list({ customerId: id, size: 50 })])
+    Promise.all([customersService.get(id), customersService.listProjects(id)])
       .then(([customerData, projectPage]) => { setCustomer(customerData); setProjects(projectPage.content); })
       .catch(() => setError('Không thể tải thông tin khách hàng.'))
       .finally(() => setLoading(false));
