@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
@@ -41,7 +42,7 @@ export function TaskBoard({ projectId, employees, tasks, onReload }: TaskBoardPr
     priority: 'MEDIUM' as Task['priority'],
   });
 
-  const createTask = async (event: React.FormEvent) => {
+  const createTask = async (event: FormEvent) => {
     event.preventDefault();
     setFormError('');
     if (!form.assigneeId || !form.startDate || !form.dueDate) {
