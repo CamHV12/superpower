@@ -4,5 +4,7 @@ import java.math.BigDecimal;
 
 public record FinanceMonthlyResponse(
         String month,
-        BigDecimal paidAmount
+        BigDecimal paidAmount,
+        BigDecimal expenseAmount,
+        BigDecimal netCashFlow
 ) {}
