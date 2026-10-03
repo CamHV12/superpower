@@ -1,6 +1,7 @@
 package com.company.enterprise.project;
 
 import com.company.enterprise.project.dto.CreateProjectRequest;
+import com.company.enterprise.project.dto.UpdateProjectRequest;
 import com.company.enterprise.project.entity.Project;
 import com.company.enterprise.project.entity.ProjectPriority;
 import com.company.enterprise.project.entity.ProjectStatus;
@@ -122,4 +123,65 @@ class ProjectServiceTest {
         verify(project, never()).setProgress(anyInt());
         verify(projectRepository, never()).save(any(Project.class));
     }
+    @Test
+    void updatesProjectFields() {
+        UUID projectId = UUID.randomUUID();
+        UUID managerId = UUID.randomUUID();
+        Employee manager = mock(Employee.class);
+        Project project = mock(Project.class);
+
+        var request = new UpdateProjectRequest(
+                "Updated Project",
+                "Mô tả mới",
+                managerId,
+                LocalDate.of(2026, 10, 5),
+                LocalDate.of(2026, 12, 31),
+                new BigDecimal("750000000"),
+                ProjectStatus.ACTIVE,
+                ProjectPriority.URGENT,
+                40
+        );
+
+        when(projectRepository.findById(projectId)).thenReturn(java.util.Optional.of(project));
+        when(employeeRepository.findById(managerId)).thenReturn(java.util.Optional.of(manager));
+        when(projectRepository.save(project)).thenReturn(project);
+
+        projectService.update(projectId, request);
+
+        verify(project).update(
+                request.name(),
+                request.description(),
+                manager,
+                request.priority(),
+                request.startDate(),
+                request.endDate(),
+                request.budget(),
+                request.status(),
+                request.progress()
+        );
+        verify(projectRepository).save(project);
+    }
+
+    @Test
+    void rejectsUpdateWhenStartDateIsAfterEndDate() {
+        UUID projectId = UUID.randomUUID();
+        var request = new UpdateProjectRequest(
+                "Updated Project",
+                "Mô tả",
+                UUID.randomUUID(),
+                LocalDate.of(2026, 12, 31),
+                LocalDate.of(2026, 10, 1),
+                new BigDecimal("100000000"),
+                ProjectStatus.ACTIVE,
+                ProjectPriority.MEDIUM,
+                20
+        );
+
+        when(projectRepository.findById(projectId)).thenReturn(java.util.Optional.of(mock(Project.class)));
+
+        assertThatThrownBy(() -> projectService.update(projectId, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Ngày bắt đầu không được sau ngày kết thúc");
+    }
+
 }
