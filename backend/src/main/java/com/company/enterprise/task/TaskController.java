@@ -3,6 +3,7 @@ package com.company.enterprise.task;
 import com.company.enterprise.employee.entity.Employee;
 import com.company.enterprise.task.dto.CreateTaskRequest;
 import com.company.enterprise.task.dto.TaskResponse;
+import com.company.enterprise.task.dto.UpdateTaskRequest;
 import com.company.enterprise.task.entity.Task;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,24 @@ public class TaskController {
             @PathVariable UUID projectId,
             @Valid @RequestBody CreateTaskRequest request) {
         return toResponse(taskService.create(projectId, request));
+    }
+
+    @GetMapping("/{taskId}")
+    public TaskResponse findById(@PathVariable UUID taskId) {
+        return toResponse(taskService.findById(taskId));
+    }
+
+    @PutMapping("/{taskId}")
+    public TaskResponse update(
+            @PathVariable UUID taskId,
+            @Valid @RequestBody UpdateTaskRequest request) {
+        return toResponse(taskService.update(taskId, request));
+    }
+
+    @DeleteMapping("/{taskId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable UUID taskId) {
+        taskService.delete(taskId);
     }
 
     private TaskResponse toResponse(Task task) {
