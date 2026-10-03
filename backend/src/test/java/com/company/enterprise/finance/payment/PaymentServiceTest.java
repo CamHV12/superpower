@@ -64,6 +64,7 @@ class PaymentServiceTest {
         when(invoice.getId()).thenReturn(invoiceId);
         when(invoice.getTotalAmount()).thenReturn(new BigDecimal("1000000"));
         when(invoice.getStatus()).thenReturn(InvoiceStatus.SENT);
+        when(invoice.getIssueDate()).thenReturn(LocalDate.of(2026, 10, 1));
         when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
         when(paymentRepository.sumAmountByInvoiceId(invoiceId)).thenReturn(new BigDecimal("800000"));
 
