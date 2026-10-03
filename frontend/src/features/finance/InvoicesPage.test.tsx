@@ -52,4 +52,16 @@ describe('InvoicesPage', () => {
     expect(screen.getByText('Số hóa đơn')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Lưu hóa đơn' })).toBeInTheDocument();
   });
+  it('adds another invoice item row', async () => {
+    render(<MemoryRouter><InvoicesPage /></MemoryRouter>);
+    await waitFor(() => expect(screen.getByText('INV-001')).toBeInTheDocument());
+
+    screen.getByRole('button', { name: 'Tạo hóa đơn' }).click();
+    expect(screen.getAllByPlaceholderText('Dịch vụ phát triển phần mềm')).toHaveLength(1);
+
+    screen.getByRole('button', { name: 'Thêm dòng' }).click();
+    expect(screen.getAllByPlaceholderText('Dịch vụ phát triển phần mềm')).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: 'Xóa' })).toHaveLength(2);
+  });
+
 });
