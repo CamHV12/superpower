@@ -39,6 +39,8 @@ export function ProjectsPage() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
+  const [customerId, setCustomerId] = useState('');
   const [keyword, setKeyword] = useState('');
   const [status, setStatus] = useState<ProjectStatus | ''>('');
   const [priority, setPriority] = useState<ProjectPriority | ''>('');
@@ -57,13 +59,14 @@ export function ProjectsPage() {
     endDate: '',
     budget: '0',
     priority: 'MEDIUM' as ProjectPriority,
+    customerId: '',
   });
 
   const load = async () => {
     setLoading(true);
     setError('');
     try {
-      const [projectPage, employeePage] = await Promise.all([
+      const [projectPage, employeePage, customerPage] = await Promise.all([
         projectsService.list({
           page,
           size: 10,
@@ -71,12 +74,15 @@ export function ProjectsPage() {
           status: status || undefined,
           priority: priority || undefined,
           managerId: managerId || undefined,
+          customerId: customerId || undefined,
         }),
         projectsService.listEmployees(),
+        projectsService.listCustomers(),
       ]);
       setProjects(projectPage.content);
       setTotalPages(projectPage.totalPages);
       setEmployees(employeePage.content.filter((employee) => employee.active));
+      setCustomers(customerPage.content);
     } catch {
       setError('Không thể tải danh sách dự án. Vui lòng thử lại.');
     } finally {
@@ -86,7 +92,7 @@ export function ProjectsPage() {
 
   useEffect(() => {
     setPage(0);
-  }, [keyword, status, priority, managerId]);
+  }, [keyword, status, priority, managerId, customerId]);
 
   useEffect(() => {
     void load();
@@ -109,6 +115,7 @@ export function ProjectsPage() {
       await projectsService.create({
         ...form,
         budget: Number(form.budget),
+        customerId: form.customerId || undefined,
       });
       setShowForm(false);
       setForm({
@@ -116,6 +123,7 @@ export function ProjectsPage() {
         name: '',
         description: '',
         managerId: '',
+        customerId: '',
         startDate: '',
         endDate: '',
         budget: '0',
@@ -165,6 +173,13 @@ export function ProjectsPage() {
               </select>
             </div>
             <div>
+              <label className="text-sm font-medium">Khách hàng</label>
+              <select value={form.customerId} onChange={(e) => setForm({ ...form, customerId: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">
+                <option value="">Chưa gán khách hàng</option>
+                {customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}
+              </select>
+            </div>
+            <div>
               <label className="text-sm font-medium">Ưu tiên</label>
               <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as ProjectPriority })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">
                 {Object.entries(priorityLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
@@ -204,6 +219,10 @@ export function ProjectsPage() {
             <option value="">Tất cả ưu tiên</option>
             {Object.entries(priorityLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
+          <select aria-label="Lọc khách hàng" value={customerId} onChange={(e) => setCustomerId(e.target.value)} className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">
+            <option value="">Tất cả khách hàng</option>
+            {customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}
+          </select>
           <select aria-label="Lọc quản lý" value={managerId} onChange={(e) => setManagerId(e.target.value)} className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">
             <option value="">Tất cả quản lý</option>
             {employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.fullName}</option>)}
@@ -226,6 +245,7 @@ export function ProjectsPage() {
               <thead className="bg-slate-50 dark:bg-slate-900">
                 <tr>
                   <th className="px-5 py-3">Dự án</th>
+                  <th className="px-5 py-3">Khách hàng</th>
                   <th className="px-5 py-3">Quản lý</th>
                   <th className="px-5 py-3">Trạng thái</th>
                   <th className="px-5 py-3">Ưu tiên</th>
@@ -242,6 +262,7 @@ export function ProjectsPage() {
                         <div><p className="font-semibold hover:text-blue-600">{project.name}</p><p className="text-xs text-slate-500">{project.code}</p></div>
                       </Link>
                     </td>
+                    <td className="px-5 py-4">{project.customerName || '—'}</td>
                     <td className="px-5 py-4">{project.managerName}</td>
                     <td className="px-5 py-4"><Badge variant={statusVariant(project.status)}>{statusLabels[project.status]}</Badge></td>
                     <td className="px-5 py-4">{priorityLabels[project.priority]}</td>
