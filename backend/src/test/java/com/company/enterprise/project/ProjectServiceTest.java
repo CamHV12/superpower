@@ -8,6 +8,7 @@ import com.company.enterprise.project.entity.ProjectStatus;
 import com.company.enterprise.project.repository.ProjectRepository;
 import com.company.enterprise.employee.entity.Employee;
 import com.company.enterprise.employee.repository.EmployeeRepository;
+import com.company.enterprise.customer.repository.CustomerRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,6 +35,9 @@ class ProjectServiceTest {
     @Mock
     EmployeeRepository employeeRepository;
 
+    @Mock
+    CustomerRepository customerRepository;
+
     @InjectMocks
     ProjectService projectService;
 
@@ -44,6 +48,7 @@ class ProjectServiceTest {
                 "Enterprise Dashboard",
                 "Quản lý doanh nghiệp tổng thể",
                 UUID.randomUUID(),
+                null,
                 LocalDate.of(2026, 10, 1),
                 LocalDate.of(2026, 12, 31),
                 new BigDecimal("500000000"),
@@ -74,6 +79,7 @@ class ProjectServiceTest {
                 "Enterprise Dashboard",
                 "Mô tả",
                 UUID.randomUUID(),
+                null,
                 LocalDate.of(2026, 10, 1),
                 LocalDate.of(2026, 12, 31),
                 new BigDecimal("500000000"),
@@ -96,6 +102,7 @@ class ProjectServiceTest {
                 "Invalid Project",
                 "Mô tả",
                 UUID.randomUUID(),
+                null,
                 LocalDate.of(2026, 12, 31),
                 LocalDate.of(2026, 10, 1),
                 new BigDecimal("100000000"),
@@ -136,6 +143,7 @@ class ProjectServiceTest {
                 "Updated Project",
                 "Mô tả mới",
                 managerId,
+                null,
                 LocalDate.of(2026, 10, 5),
                 LocalDate.of(2026, 12, 31),
                 new BigDecimal("750000000"),
@@ -184,6 +192,7 @@ class ProjectServiceTest {
                 "Updated Project",
                 "Mô tả",
                 UUID.randomUUID(),
+                null,
                 LocalDate.of(2026, 12, 31),
                 LocalDate.of(2026, 10, 1),
                 new BigDecimal("100000000"),
