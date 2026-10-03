@@ -1,6 +1,8 @@
 package com.company.enterprise.customer;
 
 import com.company.enterprise.customer.dto.*;
+import com.company.enterprise.project.ProjectService;
+import com.company.enterprise.project.dto.ProjectResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
@@ -12,9 +14,11 @@ import java.util.UUID;
 @RequestMapping("/api/v1/customers")
 public class CustomerController {
     private final CustomerService service;
+    private final ProjectService projectService;
 
-    public CustomerController(CustomerService service) {
+    public CustomerController(CustomerService service, ProjectService projectService) {
         this.service = service;
+        this.projectService = projectService;
     }
 
     @GetMapping
@@ -28,6 +32,12 @@ public class CustomerController {
     @GetMapping("/{id}")
     public CustomerResponse findById(@PathVariable UUID id) {
         return service.findById(id);
+    }
+
+    @GetMapping("/{id}/projects")
+    public Page<ProjectResponse> projects(@PathVariable UUID id, Pageable pageable) {
+        service.findById(id);
+        return projectService.findAll(pageable, null, null, null, id, null);
     }
 
     @PostMapping
