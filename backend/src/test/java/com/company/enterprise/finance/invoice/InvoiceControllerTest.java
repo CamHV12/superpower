@@ -49,6 +49,24 @@ class InvoiceControllerTest {
         verifyNoInteractions(service);
     }
 
+    
+    @Test
+    void listsInvoicesWithFilters() throws Exception {
+        when(service.findAll(any(), eq("ACME"), eq(InvoiceStatus.SENT), any(), eq(LocalDate.of(2026, 10, 1)), eq(LocalDate.of(2026, 10, 31))))
+                .thenReturn(new PageImpl<>(List.of()));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/invoices")
+                        .param("keyword", "ACME")
+                        .param("status", "SENT")
+                        .param("customerId", UUID.randomUUID().toString())
+                        .param("fromDate", "2026-10-01")
+                        .param("toDate", "2026-10-31"))
+                .andExpect(status().isOk());
+
+        verify(service).findAll(any(), eq("ACME"), eq(InvoiceStatus.SENT), any(),
+                eq(LocalDate.of(2026, 10, 1)), eq(LocalDate.of(2026, 10, 31)));
+    }
+
     @Test
     void createsInvoiceAndReturnsCreated() throws Exception {
         UUID id = UUID.randomUUID();
