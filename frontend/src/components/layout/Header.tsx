@@ -1,9 +1,22 @@
-import { Bell, Moon, Search, Sun } from 'lucide-react';
+import { Bell, LogOut, Moon, Search, Sun } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useUiStore } from '../../stores/ui.store';
+import { useAuthStore } from '../../stores/auth.store';
 
 export function Header() {
   const theme = useUiStore((state) => state.theme);
   const toggleTheme = useUiStore((state) => state.toggleTheme);
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate('/login', { replace: true });
+  }
+
+  const fullName = user ? `${user.lastName} ${user.firstName}` : 'Người dùng';
+  const role = user?.roles[0] ?? 'USER';
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 lg:px-6">
@@ -17,9 +30,12 @@ export function Header() {
           {theme === 'light' ? <Moon className="size-5" /> : <Sun className="size-5" />}
         </button>
         <div className="ml-2 hidden text-right sm:block">
-          <p className="text-sm font-semibold">Nguyễn Văn An</p>
-          <p className="text-xs text-slate-500">Administrator</p>
+          <p className="text-sm font-semibold">{fullName}</p>
+          <p className="text-xs text-slate-500">{role}</p>
         </div>
+        <button type="button" aria-label="Đăng xuất" onClick={handleLogout} className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800">
+          <LogOut className="size-5" />
+        </button>
       </div>
     </header>
   );
