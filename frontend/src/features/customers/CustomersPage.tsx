@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Building2, Plus, Search, UserRound } from 'lucide-react';
+import { Building2, Eye, Plus, Search, UserRound } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { customersService } from './customers.service';
+import { Link } from 'react-router-dom';
 import type { Customer, CustomerType } from './customers.types';
 
 const typeLabels: Record<CustomerType, string> = {
@@ -130,7 +131,7 @@ export function CustomersPage() {
                  <td className="px-5 py-4"><p>{customer.phone || '—'}</p><p className="text-xs text-slate-500">{customer.email || '—'}</p></td>
                  <td className="px-5 py-4">{customer.taxCode || '—'}</td>
                  <td className="px-5 py-4"><Badge variant={customer.active ? 'success' : 'neutral'}>{customer.active ? 'Hoạt động' : 'Ngừng hoạt động'}</Badge></td>
-                 <td className="px-5 py-4"><Button variant="ghost" onClick={() => void remove(customer)}>Xóa</Button></td>
+                 <td className="px-5 py-4"><div className="flex gap-1"><Link to={`/customers/${customer.id}`}><Button variant="ghost"><Eye className="size-4" />Xem</Button></Link><Button variant="ghost" onClick={() => void remove(customer)}>Xóa</Button></div></td>
                </tr>)}
              </tbody>
            </table>
