@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, UserPlus, Users } from 'lucide-react';
+import type { FormEvent } from 'react';
+import { ArrowLeft, Pencil, UserPlus, Users } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -36,6 +37,13 @@ export function ProjectDetailPage() {
   const [error, setError] = useState('');
   const [memberError, setMemberError] = useState('');
   const [addingMember, setAddingMember] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [savingProject, setSavingProject] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [editForm, setEditForm] = useState({
+    name: '', description: '', managerId: '', startDate: '', endDate: '',
+    budget: '0', status: 'DRAFT' as Project['status'], priority: 'MEDIUM' as Project['priority'], progress: 0,
+  });
 
   const load = async () => {
     if (!id) return;
@@ -49,6 +57,17 @@ export function ProjectDetailPage() {
         projectsService.listEmployees(),
       ]);
       setProject(projectData);
+      setEditForm({
+        name: projectData.name,
+        description: projectData.description || '',
+        managerId: projectData.managerId,
+        startDate: projectData.startDate,
+        endDate: projectData.endDate,
+        budget: String(projectData.budget),
+        status: projectData.status,
+        priority: projectData.priority,
+        progress: projectData.progress,
+      });
       setMembers(memberData);
       setTasks(taskPage.content);
       setEmployees(employeePage.content.filter((employee) => employee.active));
@@ -68,6 +87,29 @@ export function ProjectDetailPage() {
   useEffect(() => {
     void load();
   }, [id]);
+
+  const saveProject = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!id) return;
+    setEditError('');
+    if (editForm.startDate > editForm.endDate) {
+      setEditError('Ngày bắt đầu không được sau ngày kết thúc.');
+      return;
+    }
+    setSavingProject(true);
+    try {
+      const updated = await projectsService.update(id, {
+        ...editForm,
+        budget: Number(editForm.budget),
+      });
+      setProject(updated);
+      setShowEdit(false);
+    } catch {
+      setEditError('Không thể cập nhật dự án. Vui lòng kiểm tra dữ liệu.');
+    } finally {
+      setSavingProject(false);
+    }
+  };
 
   const addMember = async () => {
     if (!id || !selectedEmployee) {
@@ -117,6 +159,7 @@ export function ProjectDetailPage() {
               <Badge variant="neutral">{project.priority}</Badge>
             </div>
             <h1 className="mt-2 text-2xl font-bold">{project.name}</h1>
+            <Button variant="secondary" className="mt-3" onClick={() => setShowEdit((value) => !value)}><Pencil className="size-4" />Chỉnh sửa</Button>
             <p className="mt-2 max-w-3xl text-sm text-slate-500">{project.description || 'Chưa có mô tả.'}</p>
           </div>
           <div className="min-w-56">
@@ -131,6 +174,24 @@ export function ProjectDetailPage() {
           <div><p className="text-xs text-slate-500">Ngân sách</p><p className="mt-1 font-medium">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(project.budget)}</p></div>
         </div>
       </Card>
+
+      {showEdit && (
+        <Card>
+          <form onSubmit={saveProject} className="grid gap-4 md:grid-cols-2">
+            <div><label className="text-sm font-medium">Tên dự án</label><input required value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
+            <div><label className="text-sm font-medium">Quản lý</label><select required value={editForm.managerId} onChange={(e) => setEditForm({ ...editForm, managerId: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.fullName}</option>)}</select></div>
+            <div><label className="text-sm font-medium">Trạng thái</label><select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value as Project['status'] })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+            <div><label className="text-sm font-medium">Ưu tiên</label><select value={editForm.priority} onChange={(e) => setEditForm({ ...editForm, priority: e.target.value as Project['priority'] })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"><option value="LOW">Thấp</option><option value="MEDIUM">Trung bình</option><option value="HIGH">Cao</option><option value="URGENT">Khẩn cấp</option></select></div>
+            <div><label className="text-sm font-medium">Ngày bắt đầu</label><input required type="date" value={editForm.startDate} onChange={(e) => setEditForm({ ...editForm, startDate: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
+            <div><label className="text-sm font-medium">Ngày kết thúc</label><input required type="date" value={editForm.endDate} onChange={(e) => setEditForm({ ...editForm, endDate: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
+            <div><label className="text-sm font-medium">Ngân sách</label><input min="0" type="number" value={editForm.budget} onChange={(e) => setEditForm({ ...editForm, budget: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
+            <div><label className="text-sm font-medium">Tiến độ</label><input min="0" max="100" type="number" value={editForm.progress} onChange={(e) => setEditForm({ ...editForm, progress: Number(e.target.value) })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
+            <div className="md:col-span-2"><label className="text-sm font-medium">Mô tả</label><textarea rows={3} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
+            {editError && <p className="md:col-span-2 text-sm text-red-600">{editError}</p>}
+            <div className="md:col-span-2 flex justify-end gap-2"><Button type="button" variant="secondary" onClick={() => setShowEdit(false)}>Hủy</Button><Button type="submit" loading={savingProject}>Lưu thay đổi</Button></div>
+          </form>
+        </Card>
+      )}
 
       <Card>
         <div className="flex items-center gap-2"><Users className="size-5 text-blue-600" /><h2 className="font-semibold">Thành viên dự án</h2></div>
