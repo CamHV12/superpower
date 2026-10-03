@@ -15,6 +15,8 @@ public record ProjectResponse(
         String description,
         UUID managerId,
         String managerName,
+        UUID customerId,
+        String customerName,
         ProjectStatus status,
         ProjectPriority priority,
         LocalDate startDate,
