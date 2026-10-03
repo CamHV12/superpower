@@ -1,4 +1,4 @@
-import { BarChart3, BriefcaseBusiness, ChevronLeft, CircleDollarSign, FileBarChart, LayoutDashboard, Users } from 'lucide-react';
+import { BriefcaseBusiness, ChevronLeft, CircleDollarSign, FileBarChart, LayoutDashboard, Users } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 const navigation = [
