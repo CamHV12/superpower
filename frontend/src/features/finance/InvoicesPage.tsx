@@ -27,6 +27,7 @@ export function InvoicesPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [filters, setFilters] = useState({ keyword: '', status: '' as InvoiceStatus | '', customerId: '', fromDate: '', toDate: '' });
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
@@ -39,7 +40,7 @@ export function InvoicesPage() {
   const load = async () => {
     setLoading(true); setError('');
     try {
-      const result = await financeService.listInvoices({ page, size: 10 });
+      const result = await financeService.listInvoices({ page, size: 10, ...filters });
       setItems(result.content); setTotalPages(result.totalPages);
     } catch { setError('Không thể tải danh sách hóa đơn.'); }
     finally { setLoading(false); }
@@ -47,8 +48,21 @@ export function InvoicesPage() {
 
   useEffect(() => {
     void load();
+  }, [page, filters.keyword, filters.status, filters.customerId, filters.fromDate, filters.toDate]);
+
+  useEffect(() => {
     financeService.listCustomers().then(r => setCustomers(r.content)).catch(() => setCustomers([]));
-  }, [page]);
+  }, []);
+
+  const updateFilter = (key: keyof typeof filters, value: string) => {
+    setPage(0);
+    setFilters(current => ({ ...current, [key]: value }));
+  };
+
+  const resetFilters = () => {
+    setPage(0);
+    setFilters({ keyword: '', status: '', customerId: '', fromDate: '', toDate: '' });
+  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setSaving(true); setFormError('');
@@ -74,6 +88,30 @@ export function InvoicesPage() {
         <div><h1 className="text-2xl font-bold tracking-tight">Tài chính · Hóa đơn</h1><p className="mt-1 text-sm text-slate-500">Quản lý hóa đơn và công nợ khách hàng.</p></div>
         <Button onClick={() => setShowForm(v => !v)}><Plus className="size-4" />{showForm ? 'Đóng' : 'Tạo hóa đơn'}</Button>
       </div>
+
+      <Card>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
+          <input
+            value={filters.keyword}
+            onChange={e => updateFilter('keyword', e.target.value)}
+            placeholder="Tìm số hóa đơn, khách hàng..."
+            className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+          />
+          <select value={filters.status} onChange={e => updateFilter('status', e.target.value)} className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">
+            <option value="">Tất cả trạng thái</option>
+            {Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          </select>
+          <select value={filters.customerId} onChange={e => updateFilter('customerId', e.target.value)} className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">
+            <option value="">Tất cả khách hàng</option>
+            {customers.map(c => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}
+          </select>
+          <input type="date" value={filters.fromDate} onChange={e => updateFilter('fromDate', e.target.value)} title="Từ ngày phát hành" className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
+          <div className="flex gap-2">
+            <input type="date" value={filters.toDate} onChange={e => updateFilter('toDate', e.target.value)} title="Đến ngày phát hành" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
+            <Button type="button" variant="secondary" onClick={resetFilters}>Xóa</Button>
+          </div>
+        </div>
+      </Card>
 
       {showForm && <Card><form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
         <div><label className="text-sm font-medium">Số hóa đơn</label><input required value={form.invoiceNumber} onChange={e => setForm({ ...form, invoiceNumber: e.target.value })} placeholder="INV-001" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
