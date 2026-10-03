@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
 import { BriefcaseBusiness, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../../components/ui/Badge';
@@ -84,7 +85,7 @@ export function ProjectsPage() {
     void load();
   }, [keyword, status, priority, managerId]);
 
-  const submit = async (event: React.FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
     setFormError('');
     if (!form.managerId || !form.startDate || !form.endDate) {
