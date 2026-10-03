@@ -66,6 +66,13 @@ public class Expense {
     public String getNotes() { return notes; }
     public ExpenseStatus getStatus() { return status; }
 
+    public void cancel() {
+        if (status == ExpenseStatus.CANCELLED) {
+            throw new IllegalStateException("Khoản chi đã được hủy");
+        }
+        status = ExpenseStatus.CANCELLED;
+    }
+
     @PrePersist
     void onCreate() { Instant now = Instant.now(); createdAt = now; updatedAt = now; }
 
