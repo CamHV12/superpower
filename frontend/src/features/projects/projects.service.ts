@@ -1,4 +1,5 @@
 import { api } from '../../services/api';
+import type { Customer, CustomerPage } from '../customers/customers.types';
 import type {
   Employee,
   PageResponse,
@@ -29,6 +30,7 @@ export const projectsService = {
     name: string;
     description?: string;
     managerId: string;
+    customerId?: string;
     startDate: string;
     endDate: string;
     budget: number;
@@ -42,6 +44,7 @@ export const projectsService = {
     name: string;
     description?: string;
     managerId: string;
+    customerId?: string;
     startDate: string;
     endDate: string;
     budget: number;
@@ -111,6 +114,11 @@ export const projectsService = {
       null,
       { params: { progress } },
     );
+    return response.data;
+  },
+
+  async listCustomers(size = 100) {
+    const response = await api.get<CustomerPage>('/customers', { params: { page: 0, size, active: true } });
     return response.data;
   },
 
