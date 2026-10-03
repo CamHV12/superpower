@@ -27,6 +27,8 @@ class FinanceDashboardControllerTest {
                 new BigDecimal("3000000"),
                 new BigDecimal("1500000"),
                 new BigDecimal("1500000"),
+                new BigDecimal("400000"),
+                new BigDecimal("1100000"),
                 1,
                 new BigDecimal("1500000")
         ));
@@ -36,6 +38,8 @@ class FinanceDashboardControllerTest {
                 .andExpect(jsonPath("$.totalInvoiced").value(3000000))
                 .andExpect(jsonPath("$.totalPaid").value(1500000))
                 .andExpect(jsonPath("$.totalReceivable").value(1500000))
+                .andExpect(jsonPath("$.totalExpense").value(400000))
+                .andExpect(jsonPath("$.netCashFlow").value(1100000))
                 .andExpect(jsonPath("$.overdueInvoices").value(1))
                 .andExpect(jsonPath("$.overdueAmount").value(1500000));
     }
