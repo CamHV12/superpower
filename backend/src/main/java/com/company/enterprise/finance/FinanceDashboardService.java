@@ -2,6 +2,8 @@ package com.company.enterprise.finance;
 
 import com.company.enterprise.finance.dto.FinanceSummaryResponse;
 import com.company.enterprise.finance.dto.FinanceMonthlyResponse;
+import com.company.enterprise.finance.expense.entity.ExpenseStatus;
+import com.company.enterprise.finance.expense.repository.ExpenseRepository;
 import com.company.enterprise.finance.payment.entity.Payment;
 import com.company.enterprise.finance.invoice.entity.Invoice;
 import com.company.enterprise.finance.invoice.entity.InvoiceStatus;
@@ -20,10 +22,14 @@ import java.util.LinkedHashMap;
 public class FinanceDashboardService {
     private final InvoiceRepository invoiceRepository;
     private final PaymentRepository paymentRepository;
+    private final ExpenseRepository expenseRepository;
 
-    public FinanceDashboardService(InvoiceRepository invoiceRepository, PaymentRepository paymentRepository) {
+    public FinanceDashboardService(InvoiceRepository invoiceRepository,
+                                   PaymentRepository paymentRepository,
+                                   ExpenseRepository expenseRepository) {
         this.invoiceRepository = invoiceRepository;
         this.paymentRepository = paymentRepository;
+        this.expenseRepository = expenseRepository;
     }
 
     @Transactional(readOnly = true)
@@ -65,6 +71,9 @@ public class FinanceDashboardService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalReceivable = totalInvoiced.subtract(totalPaid).max(BigDecimal.ZERO);
+        BigDecimal totalExpense = expenseRepository.sumAmountByStatusAndDateBetween(
+                ExpenseStatus.RECORDED, LocalDate.of(1900, 1, 1), LocalDate.now());
+        BigDecimal netCashFlow = totalPaid.subtract(totalExpense);
 
         LocalDate today = LocalDate.now();
         List<Invoice> overdue = invoices.stream()
@@ -83,6 +92,8 @@ public class FinanceDashboardService {
                 totalInvoiced,
                 totalPaid,
                 totalReceivable,
+                totalExpense,
+                netCashFlow,
                 overdue.size(),
                 overdueAmount
         );
