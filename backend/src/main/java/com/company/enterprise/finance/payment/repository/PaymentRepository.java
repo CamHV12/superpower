@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface PaymentRepository extends JpaRepository<Payment, UUID> {
     @Query("select coalesce(sum(p.amount), 0) from Payment p where p.invoice.id = :invoiceId")
     BigDecimal sumAmountByInvoiceId(@Param("invoiceId") UUID invoiceId);
+
+    java.util.List<Payment> findByInvoiceIdOrderByPaymentDateDesc(UUID invoiceId);
 }
