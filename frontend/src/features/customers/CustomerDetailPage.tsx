@@ -7,7 +7,6 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Button } from '../../components/ui/Button';
 import { customersService } from './customers.service';
 import type { Customer } from './customers.types';
-import { projectsService } from '../projects/projects.service';
 import type { Project } from '../projects/projects.types';
 
 export function CustomerDetailPage() {
