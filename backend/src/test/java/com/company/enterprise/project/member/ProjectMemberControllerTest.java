@@ -34,12 +34,8 @@ class ProjectMemberControllerTest {
 
         when(memberService.findAll(projectId)).thenReturn(List.of(
                 new ProjectMemberResponse(
-                        UUID.randomUUID(),
-                        projectId,
-                        employeeId,
-                        "Nguyễn Văn A",
-                        "Backend Developer",
-                        Instant.parse("2026-10-03T08:00:00Z")
+                        UUID.randomUUID(), projectId, employeeId, "Nguyễn Văn A",
+                        "Backend Developer", Instant.parse("2026-10-03T08:00:00Z")
                 )
         ));
 
@@ -58,12 +54,8 @@ class ProjectMemberControllerTest {
 
         when(memberService.add(eq(projectId), any()))
                 .thenReturn(new ProjectMemberResponse(
-                        UUID.randomUUID(),
-                        projectId,
-                        employeeId,
-                        "Nguyễn Văn A",
-                        "Backend Developer",
-                        Instant.parse("2026-10-03T08:00:00Z")
+                        UUID.randomUUID(), projectId, employeeId, "Nguyễn Văn A",
+                        "Backend Developer", Instant.parse("2026-10-03T08:00:00Z")
                 ));
 
         mockMvc.perform(post("/api/v1/projects/" + projectId + "/members")
@@ -91,6 +83,22 @@ class ProjectMemberControllerTest {
                                   "employeeId": "%s"
                                 }
                                 """.formatted(employeeId)))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(memberService);
+    }
+
+    @Test
+    void rejectsMemberRequestWithoutEmployeeId() throws Exception {
+        UUID projectId = UUID.randomUUID();
+
+        mockMvc.perform(post("/api/v1/projects/" + projectId + "/members")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "role": "Backend Developer"
+                                }
+                                """))
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(memberService);
