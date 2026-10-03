@@ -31,6 +31,7 @@ export function ProjectDetailPage() {
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [memberRole, setMemberRole] = useState('Member');
   const [loading, setLoading] = useState(true);
@@ -42,7 +43,7 @@ export function ProjectDetailPage() {
   const [editError, setEditError] = useState('');
   const [editForm, setEditForm] = useState({
     name: '', description: '', managerId: '', startDate: '', endDate: '',
-    budget: '0', status: 'DRAFT' as Project['status'], priority: 'MEDIUM' as Project['priority'], progress: 0,
+    budget: '0', customerId: '', status: 'DRAFT' as Project['status'], priority: 'MEDIUM' as Project['priority'], progress: 0,
   });
 
   const load = async () => {
@@ -50,17 +51,19 @@ export function ProjectDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const [projectData, memberData, taskPage, employeePage] = await Promise.all([
+      const [projectData, memberData, taskPage, employeePage, customerPage] = await Promise.all([
         projectsService.get(id),
         projectsService.listMembers(id),
         projectsService.listTasks(id),
         projectsService.listEmployees(),
+        projectsService.listCustomers(),
       ]);
       setProject(projectData);
       setEditForm({
         name: projectData.name,
         description: projectData.description || '',
         managerId: projectData.managerId,
+        customerId: projectData.customerId || '',
         startDate: projectData.startDate,
         endDate: projectData.endDate,
         budget: String(projectData.budget),
@@ -71,6 +74,7 @@ export function ProjectDetailPage() {
       setMembers(memberData);
       setTasks(taskPage.content);
       setEmployees(employeePage.content.filter((employee) => employee.active));
+      setCustomers(customerPage.content);
     } catch {
       setError('Không thể tải thông tin dự án.');
     } finally {
@@ -165,7 +169,7 @@ export function ProjectDetailPage() {
           <div className="min-w-56">
             <div className="flex justify-between text-sm"><span>Tiến độ</span><strong>{project.progress}%</strong></div>
             <div className="mt-2 h-3 rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-3 rounded-full bg-blue-600" style={{ width: `${project.progress}%` }} /></div>
-            <p className="mt-2 text-xs text-slate-500">Quản lý: {project.managerName}</p>
+            <p className="mt-2 text-xs text-slate-500">Quản lý: {project.managerName}</p><p className="mt-1 text-xs text-slate-500">Khách hàng: {project.customerName || "Chưa gán"}</p>
           </div>
         </div>
         <div className="mt-6 grid gap-4 border-t border-slate-100 pt-5 sm:grid-cols-3 dark:border-slate-800">
@@ -180,6 +184,7 @@ export function ProjectDetailPage() {
           <form onSubmit={saveProject} className="grid gap-4 md:grid-cols-2">
             <div><label className="text-sm font-medium">Tên dự án</label><input required value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
             <div><label className="text-sm font-medium">Quản lý</label><select required value={editForm.managerId} onChange={(e) => setEditForm({ ...editForm, managerId: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.fullName}</option>)}</select></div>
+            <div><label className="text-sm font-medium">Khách hàng</label><select value={editForm.customerId} onChange={(e) => setEditForm({ ...editForm, customerId: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"><option value="">Chưa gán khách hàng</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}</select></div>
             <div><label className="text-sm font-medium">Trạng thái</label><select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value as Project['status'] })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
             <div><label className="text-sm font-medium">Ưu tiên</label><select value={editForm.priority} onChange={(e) => setEditForm({ ...editForm, priority: e.target.value as Project['priority'] })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"><option value="LOW">Thấp</option><option value="MEDIUM">Trung bình</option><option value="HIGH">Cao</option><option value="URGENT">Khẩn cấp</option></select></div>
             <div><label className="text-sm font-medium">Ngày bắt đầu</label><input required type="date" value={editForm.startDate} onChange={(e) => setEditForm({ ...editForm, startDate: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
