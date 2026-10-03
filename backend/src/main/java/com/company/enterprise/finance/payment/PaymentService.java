@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.List;
 
 @Service
 public class PaymentService {
@@ -48,6 +49,14 @@ public class PaymentService {
         invoiceRepository.save(invoice);
 
         return toResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PaymentResponse> findByInvoiceId(UUID invoiceId) {
+        invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy hóa đơn"));
+        return paymentRepository.findByInvoiceIdOrderByPaymentDateDesc(invoiceId)
+                .stream().map(this::toResponse).toList();
     }
 
     private PaymentResponse toResponse(Payment payment) {
