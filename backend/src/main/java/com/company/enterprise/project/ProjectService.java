@@ -87,6 +87,14 @@ public class ProjectService {
     }
 
     @Transactional
+    public void delete(UUID projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new java.util.NoSuchElementException("Không tìm thấy dự án"));
+
+        projectRepository.delete(project);
+    }
+
+    @Transactional
     public void updateProgress(UUID projectId, int progress) {
         validateProgress(progress);
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new java.util.NoSuchElementException("Không tìm thấy dự án"));
