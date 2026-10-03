@@ -102,8 +102,9 @@ export const financeService = {
     return response.data;
   },
 
-  async deleteExpense(id: string) {
-    await api.delete('/expenses/' + id);
+  async cancelExpense(id: string) {
+    const response = await api.patch<Expense>('/expenses/' + id + '/cancel');
+    return response.data;
   },
 
   async listCustomers(size = 100) {
