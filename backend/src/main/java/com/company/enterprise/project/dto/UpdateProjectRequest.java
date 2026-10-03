@@ -14,6 +14,7 @@ public record UpdateProjectRequest(
         @Size(max = 200) String name,
         @Size(max = 2000) String description,
         @NotNull UUID managerId,
+        UUID customerId,
         @NotNull LocalDate startDate,
         @NotNull LocalDate endDate,
         @DecimalMin(value = "0.0") BigDecimal budget,
