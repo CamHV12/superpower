@@ -2,6 +2,7 @@ package com.company.enterprise.finance.invoice;
 
 import com.company.enterprise.finance.invoice.dto.CreateInvoiceRequest;
 import com.company.enterprise.finance.invoice.dto.InvoiceResponse;
+import com.company.enterprise.finance.invoice.entity.InvoiceStatus;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
@@ -21,8 +23,14 @@ public class InvoiceController {
     }
 
     @GetMapping
-    public Page<InvoiceResponse> findAll(Pageable pageable) {
-        return service.findAll(pageable);
+    public Page<InvoiceResponse> findAll(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) InvoiceStatus status,
+            @RequestParam(required = false) UUID customerId,
+            @RequestParam(required = false) LocalDate fromDate,
+            @RequestParam(required = false) LocalDate toDate,
+            Pageable pageable) {
+        return service.findAll(pageable, keyword, status, customerId, fromDate, toDate);
     }
 
     @GetMapping("/{id}")
