@@ -33,6 +33,10 @@ public class PaymentService {
             throw new IllegalArgumentException("Không thể thanh toán hóa đơn đã hủy");
         }
 
+        if (request.paymentDate().isBefore(invoice.getIssueDate())) {
+            throw new IllegalArgumentException("Ngày thanh toán không được trước ngày phát hành hóa đơn");
+        }
+
         BigDecimal paid = paymentRepository.sumAmountByInvoiceId(invoice.getId());
         BigDecimal remaining = invoice.getTotalAmount().subtract(paid);
 
