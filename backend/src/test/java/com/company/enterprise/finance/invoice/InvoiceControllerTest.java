@@ -59,7 +59,8 @@ class InvoiceControllerTest {
                 LocalDate.of(2026, 10, 3), LocalDate.of(2026, 10, 31),
                 InvoiceStatus.DRAFT,
                 new BigDecimal("1000000"), new BigDecimal("100000"),
-                BigDecimal.ZERO, new BigDecimal("1100000"), null, List.of());
+                BigDecimal.ZERO, new BigDecimal("1100000"), BigDecimal.ZERO,
+                new BigDecimal("1100000"), null, List.of());
 
         when(service.create(any())).thenReturn(response);
 
