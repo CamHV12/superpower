@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { financeService } from '../finance/finance.service';
-import { ArrowDownRight, ArrowUpRight, BriefcaseBusiness, CircleDollarSign, Users, WalletCards } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
