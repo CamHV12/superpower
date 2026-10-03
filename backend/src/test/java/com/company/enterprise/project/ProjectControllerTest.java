@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -54,7 +55,7 @@ class ProjectControllerTest {
                 Instant.parse("2026-10-03T08:00:00Z")
         );
 
-        when(projectService.findAll(any(PageRequest.class)))
+        when(projectService.findAll(any(PageRequest.class), any(), any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(response)));
 
         mockMvc.perform(get("/api/v1/projects")
@@ -99,6 +100,27 @@ class ProjectControllerTest {
                 .andExpect(jsonPath("$.name").value("Updated Project"))
                 .andExpect(jsonPath("$.status").value("ACTIVE"))
                 .andExpect(jsonPath("$.progress").value(40));
+    }
+
+    @Test
+    void filtersProjectsByStatusPriorityManagerAndKeyword() throws Exception {
+        UUID managerId = UUID.randomUUID();
+
+        when(projectService.findAll(
+                any(PageRequest.class),
+                eq(ProjectStatus.ACTIVE),
+                eq(ProjectPriority.HIGH),
+                eq(managerId),
+                eq("dashboard")
+        )).thenReturn(new PageImpl<>(List.of()));
+
+        mockMvc.perform(get("/api/v1/projects")
+                        .param("status", "ACTIVE")
+                        .param("priority", "HIGH")
+                        .param("managerId", managerId.toString())
+                        .param("keyword", "dashboard")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
 }
