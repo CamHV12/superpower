@@ -25,8 +25,8 @@ server:
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   jwt:
-    secret: ${JWT_SECRET:change-me-in-local-env-only}
-    expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+    secret: ${JWT_SECRET:local-development-jwt-secret-change-before-production-1234567890}
+    expiration-seconds: ${JWT_EXPIRATION_SECONDS:3600}
 
 springdoc:
   api-docs:
