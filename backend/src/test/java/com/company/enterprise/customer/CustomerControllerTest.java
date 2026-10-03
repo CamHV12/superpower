@@ -2,6 +2,7 @@ package com.company.enterprise.customer;
 
 import com.company.enterprise.customer.dto.*;
 import com.company.enterprise.customer.entity.CustomerType;
+import com.company.enterprise.project.ProjectService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,6 +22,7 @@ class CustomerControllerTest {
     @Autowired MockMvc mockMvc;
 
     @MockBean CustomerService service;
+    @MockBean ProjectService projectService;
 
     @Test
     void rejectsInvalidCreateRequest() throws Exception {
