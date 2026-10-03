@@ -1,6 +1,8 @@
 package com.company.enterprise.finance;
 
 import com.company.enterprise.finance.dto.FinanceSummaryResponse;
+import com.company.enterprise.finance.dto.FinanceMonthlyResponse;
+import com.company.enterprise.finance.payment.entity.Payment;
 import com.company.enterprise.finance.invoice.entity.Invoice;
 import com.company.enterprise.finance.invoice.entity.InvoiceStatus;
 import com.company.enterprise.finance.invoice.repository.InvoiceRepository;
@@ -11,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class FinanceDashboardService {
@@ -20,6 +25,30 @@ public class FinanceDashboardService {
     public FinanceDashboardService(InvoiceRepository invoiceRepository, PaymentRepository paymentRepository) {
         this.invoiceRepository = invoiceRepository;
         this.paymentRepository = paymentRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<FinanceMonthlyResponse> monthly(int months) {
+        int safeMonths = Math.max(1, Math.min(months, 12));
+        LocalDate end = LocalDate.now();
+        LocalDate start = end.withDayOfMonth(1).minusMonths(safeMonths - 1L);
+        List<Payment> payments = paymentRepository.findByPaymentDateBetweenOrderByPaymentDateAsc(start, end);
+
+        Map<String, BigDecimal> grouped = new LinkedHashMap<>();
+        for (int i = 0; i < safeMonths; i++) {
+            LocalDate month = start.plusMonths(i);
+            grouped.put(month.toString().substring(0, 7), BigDecimal.ZERO);
+        }
+        payments.forEach(payment -> {
+            String month = payment.getPaymentDate().toString().substring(0, 7);
+            if (grouped.containsKey(month)) {
+                grouped.computeIfPresent(month, (key, value) -> value.add(payment.getAmount()));
+            }
+        });
+
+        return grouped.entrySet().stream()
+                .map(entry -> new FinanceMonthlyResponse(entry.getKey(), entry.getValue()))
+                .toList();
     }
 
     @Transactional(readOnly = true)
