@@ -71,8 +71,7 @@ public class FinanceDashboardService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalReceivable = totalInvoiced.subtract(totalPaid).max(BigDecimal.ZERO);
-        BigDecimal totalExpense = expenseRepository.sumAmountByStatusAndDateBetween(
-                ExpenseStatus.RECORDED, LocalDate.of(1900, 1, 1), LocalDate.now());
+        BigDecimal totalExpense = expenseRepository.sumAmountByStatus(ExpenseStatus.RECORDED);
         BigDecimal netCashFlow = totalPaid.subtract(totalExpense);
 
         LocalDate today = LocalDate.now();
