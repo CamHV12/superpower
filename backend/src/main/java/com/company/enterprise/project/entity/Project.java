@@ -1,5 +1,6 @@
 package com.company.enterprise.project.entity;
 
+import com.company.enterprise.customer.entity.Customer;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -27,6 +28,10 @@ public class Project {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "manager_id", nullable = false)
     private com.company.enterprise.employee.entity.Employee manager;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
@@ -60,10 +65,17 @@ public class Project {
                    com.company.enterprise.employee.entity.Employee manager,
                    ProjectPriority priority, LocalDate startDate, LocalDate endDate,
                    BigDecimal budget) {
+        this(code, name, description, manager, null, priority, startDate, endDate, budget);
+    }
+
+    public Project(String code, String name, String description,
+                   com.company.enterprise.employee.entity.Employee manager, Customer customer,
+                   ProjectPriority priority, LocalDate startDate, LocalDate endDate, BigDecimal budget) {
         this.code = code;
         this.name = name;
         this.description = description;
         this.manager = manager;
+        this.customer = customer;
         this.status = ProjectStatus.DRAFT;
         this.priority = priority;
         this.startDate = startDate;
@@ -89,6 +101,7 @@ public class Project {
     public String getName() { return name; }
     public String getDescription() { return description; }
     public com.company.enterprise.employee.entity.Employee getManager() { return manager; }
+    public Customer getCustomer() { return customer; }
     public ProjectStatus getStatus() { return status; }
     public ProjectPriority getPriority() { return priority; }
     public LocalDate getStartDate() { return startDate; }
