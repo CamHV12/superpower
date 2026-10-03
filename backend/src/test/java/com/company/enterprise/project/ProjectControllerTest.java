@@ -5,6 +5,7 @@ import com.company.enterprise.project.entity.ProjectPriority;
 import com.company.enterprise.project.entity.ProjectStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProjectController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class ProjectControllerTest {
 
     @Autowired
@@ -34,10 +36,8 @@ class ProjectControllerTest {
 
     @Test
     void returnsPagedProjects() throws Exception {
-        UUID id = UUID.randomUUID();
-
         ProjectResponse response = new ProjectResponse(
-                id,
+                UUID.randomUUID(),
                 "PRJ-001",
                 "Enterprise Dashboard",
                 "Quản lý doanh nghiệp tổng thể",
@@ -57,7 +57,6 @@ class ProjectControllerTest {
                 .thenReturn(new PageImpl<>(List.of(response)));
 
         mockMvc.perform(get("/api/v1/projects")
-                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].code").value("PRJ-001"))
