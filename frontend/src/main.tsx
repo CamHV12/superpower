@@ -1,18 +1,30 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
+import { StrictMode, useEffect } from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { AppRoutes } from './routes/AppRoutes';
+import { useUiStore } from './stores/ui.store';
+import './index.css';
+
+function ThemeController() {
+  const theme = useUiStore((state) => state.theme);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
+
+  return null;
+}
 
 function App() {
   return (
-    <main className="min-h-screen bg-slate-50 p-8 text-slate-900">
-      <h1 className="text-2xl font-bold">Enterprise Dashboard</h1>
-      <p className="mt-2 text-slate-600">Frontend baseline đã sẵn sàng.</p>
-    </main>
-  )
+    <BrowserRouter>
+      <ThemeController />
+      <AppRoutes />
+    </BrowserRouter>
+  );
 }
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
   </StrictMode>,
-)
+);
