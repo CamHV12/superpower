@@ -53,6 +53,12 @@ public class ProjectController {
         return projectService.update(id, request);
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable UUID id) {
+        projectService.delete(id);
+    }
+
     @PatchMapping("/{id}/progress")
     public ProjectResponse updateProgress(
             @PathVariable UUID id,
