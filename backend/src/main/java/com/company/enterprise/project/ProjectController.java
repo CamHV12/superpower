@@ -3,6 +3,8 @@ package com.company.enterprise.project;
 import com.company.enterprise.project.dto.CreateProjectRequest;
 import com.company.enterprise.project.dto.ProjectResponse;
 import com.company.enterprise.project.dto.UpdateProjectRequest;
+import com.company.enterprise.project.entity.ProjectPriority;
+import com.company.enterprise.project.entity.ProjectStatus;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,8 +25,13 @@ public class ProjectController {
     }
 
     @GetMapping
-    public Page<ProjectResponse> findAll(Pageable pageable) {
-        return projectService.findAll(pageable);
+    public Page<ProjectResponse> findAll(
+            Pageable pageable,
+            @RequestParam(required = false) ProjectStatus status,
+            @RequestParam(required = false) ProjectPriority priority,
+            @RequestParam(required = false) UUID managerId,
+            @RequestParam(required = false) String keyword) {
+        return projectService.findAll(pageable, status, priority, managerId, keyword);
     }
 
     @GetMapping("/{id}")
