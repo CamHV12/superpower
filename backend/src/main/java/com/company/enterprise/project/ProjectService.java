@@ -7,8 +7,10 @@ import com.company.enterprise.project.dto.ProjectResponse;
 import com.company.enterprise.project.dto.UpdateProjectRequest;
 import com.company.enterprise.project.entity.Project;
 import com.company.enterprise.project.repository.ProjectRepository;
+import com.company.enterprise.project.repository.ProjectSpecifications;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
@@ -32,6 +34,31 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public Page<ProjectResponse> findAll(Pageable pageable) { return projectRepository.findAll(pageable).map(this::toResponse); }
+
+    @Transactional(readOnly = true)
+    public Page<ProjectResponse> findAll(
+            Pageable pageable,
+            com.company.enterprise.project.entity.ProjectStatus status,
+            com.company.enterprise.project.entity.ProjectPriority priority,
+            UUID managerId,
+            String keyword) {
+        Specification<Project> specification = Specification.where(null);
+
+        if (status != null) {
+            specification = specification.and(ProjectSpecifications.statusEquals(status));
+        }
+        if (priority != null) {
+            specification = specification.and(ProjectSpecifications.priorityEquals(priority));
+        }
+        if (managerId != null) {
+            specification = specification.and(ProjectSpecifications.managerEquals(managerId));
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            specification = specification.and(ProjectSpecifications.keywordContains(keyword));
+        }
+
+        return projectRepository.findAll(specification, pageable).map(this::toResponse);
+    }
 
     @Transactional(readOnly = true)
     public ProjectResponse findById(UUID projectId) {
