@@ -145,6 +145,19 @@ class ProjectServiceTest {
         when(projectRepository.findById(projectId)).thenReturn(java.util.Optional.of(project));
         when(employeeRepository.findById(managerId)).thenReturn(java.util.Optional.of(manager));
         when(projectRepository.save(project)).thenReturn(project);
+        when(project.getManager()).thenReturn(manager);
+        when(project.getId()).thenReturn(projectId);
+        when(project.getCode()).thenReturn("PRJ-001");
+        when(project.getName()).thenReturn(request.name());
+        when(project.getDescription()).thenReturn(request.description());
+        when(project.getStatus()).thenReturn(request.status());
+        when(project.getPriority()).thenReturn(request.priority());
+        when(project.getStartDate()).thenReturn(request.startDate());
+        when(project.getEndDate()).thenReturn(request.endDate());
+        when(project.getBudget()).thenReturn(request.budget());
+        when(project.getProgress()).thenReturn(request.progress());
+        when(manager.getId()).thenReturn(managerId);
+        when(manager.getFullName()).thenReturn("Nguyễn Văn A");
 
         projectService.update(projectId, request);
 
