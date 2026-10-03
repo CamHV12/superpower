@@ -1,10 +1,32 @@
 import { api } from '../../services/api';
 import type { CustomerOption, Invoice, InvoicePage, Payment, PaymentMethod } from './finance.types';
 
+export interface FinanceSummary {
+  totalInvoiced: number;
+  totalPaid: number;
+  totalReceivable: number;
+  overdueInvoices: number;
+  overdueAmount: number;
+}
+
+export interface FinanceMonthly {
+  month: string;
+  paidAmount: number;
+}
+
 const cleanParams = (params: Record<string, unknown>) =>
   Object.fromEntries(Object.entries(params).filter(([, value]) => value !== undefined && value !== ''));
 
 export const financeService = {
+  async summary() {
+    const response = await api.get<FinanceSummary>('/finance/summary');
+    return response.data;
+  },
+
+  async monthly(months = 6) {
+    const response = await api.get<FinanceMonthly[]>('/finance/monthly', { params: { months } });
+    return response.data;
+  },
   async listInvoices(params: { page?: number; size?: number } = {}) {
     const response = await api.get<InvoicePage>('/invoices', {
       params: cleanParams({ page: 0, size: 10, ...params }),
