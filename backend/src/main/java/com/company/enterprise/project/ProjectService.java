@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.UUID;
 
 @Service
@@ -38,6 +39,11 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public Page<ProjectResponse> findAll(Pageable pageable) { return projectRepository.findAll(pageable).map(this::toResponse); }
+
+    @Transactional(readOnly = true)
+    public Page<ProjectResponse> findAll(Pageable pageable, com.company.enterprise.project.entity.ProjectStatus status, com.company.enterprise.project.entity.ProjectPriority priority, UUID managerId, String keyword) {
+        return findAll(pageable, status, priority, managerId, null, keyword);
+    }
 
     @Transactional(readOnly = true)
     public Page<ProjectResponse> findAll(
@@ -120,6 +126,7 @@ public class ProjectService {
 
     private Customer findCustomer(UUID customerId) {
         if (customerId == null) return null;
+        if (customerRepository == null) throw new IllegalStateException("CustomerRepository chưa được cấu hình");
         return customerRepository.findById(customerId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng"));
     }
 
