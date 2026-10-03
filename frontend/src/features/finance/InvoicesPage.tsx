@@ -34,7 +34,7 @@ export function InvoicesPage() {
   const [form, setForm] = useState({
     invoiceNumber: '', customerId: '', issueDate: today(), dueDate: today(),
     taxAmount: 0, discountAmount: 0, notes: '',
-    item: { description: '', quantity: 1, unitPrice: 0 },
+    items: [{ description: '', quantity: 1, unitPrice: 0 }],
   });
 
   const load = async () => {
@@ -71,16 +71,17 @@ export function InvoicesPage() {
         invoiceNumber: form.invoiceNumber, customerId: form.customerId,
         issueDate: form.issueDate, dueDate: form.dueDate,
         taxAmount: form.taxAmount, discountAmount: form.discountAmount,
-        notes: form.notes || undefined, items: [form.item],
+        notes: form.notes || undefined, items: form.items,
       });
       setShowForm(false);
-      setForm({ invoiceNumber: '', customerId: '', issueDate: today(), dueDate: today(), taxAmount: 0, discountAmount: 0, notes: '', item: { description: '', quantity: 1, unitPrice: 0 } });
+      setForm({ invoiceNumber: '', customerId: '', issueDate: today(), dueDate: today(), taxAmount: 0, discountAmount: 0, notes: '', items: [{ description: '', quantity: 1, unitPrice: 0 }] });
       await load();
     } catch { setFormError('Không thể tạo hóa đơn. Kiểm tra dữ liệu và số hóa đơn.'); }
     finally { setSaving(false); }
   };
 
-  const total = form.item.quantity * form.item.unitPrice + form.taxAmount - form.discountAmount;
+  const subtotal = form.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+  const total = subtotal + form.taxAmount - form.discountAmount;
 
   return (
     <div className="space-y-6">
@@ -118,9 +119,37 @@ export function InvoicesPage() {
         <div><label className="text-sm font-medium">Khách hàng</label><select required value={form.customerId} onChange={e => setForm({ ...form, customerId: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"><option value="">Chọn khách hàng</option>{customers.map(c => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}</select></div>
         <div><label className="text-sm font-medium">Ngày phát hành</label><input required type="date" value={form.issueDate} onChange={e => setForm({ ...form, issueDate: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
         <div><label className="text-sm font-medium">Ngày đến hạn</label><input required type="date" value={form.dueDate} onChange={e => setForm({ ...form, dueDate: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
-        <div className="md:col-span-2"><label className="text-sm font-medium">Mô tả</label><input required value={form.item.description} onChange={e => setForm({ ...form, item: { ...form.item, description: e.target.value } })} placeholder="Dịch vụ phát triển phần mềm" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
-        <div><label className="text-sm font-medium">Số lượng</label><input required min="0.0001" step="0.0001" type="number" value={form.item.quantity} onChange={e => setForm({ ...form, item: { ...form.item, quantity: Number(e.target.value) } })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
-        <div><label className="text-sm font-medium">Đơn giá</label><input required min="0" step="1000" type="number" value={form.item.unitPrice} onChange={e => setForm({ ...form, item: { ...form.item, unitPrice: Number(e.target.value) } })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
+        <div className="md:col-span-2">
+          <div className="mb-2 flex items-center justify-between">
+            <label className="text-sm font-medium">Chi tiết hóa đơn</label>
+            <Button type="button" variant="secondary" onClick={() => setForm(current => ({
+              ...current,
+              items: [...current.items, { description: '', quantity: 1, unitPrice: 0 }],
+            }))}><Plus className="size-4" />Thêm dòng</Button>
+          </div>
+          <div className="space-y-3">
+            {form.items.map((item, index) => (
+              <div key={index} className="grid gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-700 md:grid-cols-[1fr_140px_180px_auto]">
+                <input required value={item.description} onChange={e => setForm(current => ({
+                  ...current,
+                  items: current.items.map((row, i) => i === index ? { ...row, description: e.target.value } : row),
+                }))} placeholder="Dịch vụ phát triển phần mềm" className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
+                <input required min="0.0001" step="0.0001" type="number" value={item.quantity} onChange={e => setForm(current => ({
+                  ...current,
+                  items: current.items.map((row, i) => i === index ? { ...row, quantity: Number(e.target.value) } : row),
+                }))} aria-label={`Số lượng dòng ${index + 1}`} className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
+                <input required min="0" step="1000" type="number" value={item.unitPrice} onChange={e => setForm(current => ({
+                  ...current,
+                  items: current.items.map((row, i) => i === index ? { ...row, unitPrice: Number(e.target.value) } : row),
+                }))} aria-label={`Đơn giá dòng ${index + 1}`} className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
+                <Button type="button" variant="ghost" disabled={form.items.length === 1} onClick={() => setForm(current => ({
+                  ...current,
+                  items: current.items.filter((_, i) => i !== index),
+                }))}>Xóa</Button>
+              </div>
+            ))}
+          </div>
+        </div>
         <div><label className="text-sm font-medium">Thuế</label><input min="0" type="number" value={form.taxAmount} onChange={e => setForm({ ...form, taxAmount: Number(e.target.value) })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
         <div><label className="text-sm font-medium">Chiết khấu</label><input min="0" type="number" value={form.discountAmount} onChange={e => setForm({ ...form, discountAmount: Number(e.target.value) })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" /></div>
         <div className="md:col-span-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-900"><span className="text-xs text-slate-500">Tổng dự kiến</span><p className="font-bold">{money(Math.max(total, 0))}</p></div>
