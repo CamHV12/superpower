@@ -37,22 +37,39 @@ public class FinanceDashboardService {
         int safeMonths = Math.max(1, Math.min(months, 12));
         LocalDate end = LocalDate.now();
         LocalDate start = end.withDayOfMonth(1).minusMonths(safeMonths - 1L);
+
         List<Payment> payments = paymentRepository.findByPaymentDateBetweenOrderByPaymentDateAsc(start, end);
 
-        Map<String, BigDecimal> grouped = new LinkedHashMap<>();
+        Map<String, BigDecimal> paidByMonth = new LinkedHashMap<>();
+        Map<String, BigDecimal> expenseByMonth = new LinkedHashMap<>();
+
         for (int i = 0; i < safeMonths; i++) {
-            LocalDate month = start.plusMonths(i);
-            grouped.put(month.toString().substring(0, 7), BigDecimal.ZERO);
+            String month = start.plusMonths(i).toString().substring(0, 7);
+            paidByMonth.put(month, BigDecimal.ZERO);
+            expenseByMonth.put(month, BigDecimal.ZERO);
         }
+
         payments.forEach(payment -> {
             String month = payment.getPaymentDate().toString().substring(0, 7);
-            if (grouped.containsKey(month)) {
-                grouped.computeIfPresent(month, (key, value) -> value.add(payment.getAmount()));
+            if (paidByMonth.containsKey(month)) {
+                paidByMonth.computeIfPresent(month, (key, value) -> value.add(payment.getAmount()));
             }
         });
 
-        return grouped.entrySet().stream()
-                .map(entry -> new FinanceMonthlyResponse(entry.getKey(), entry.getValue()))
+        for (int i = 0; i < safeMonths; i++) {
+            LocalDate monthStart = start.plusMonths(i).withDayOfMonth(1);
+            LocalDate monthEnd = monthStart.withDayOfMonth(monthStart.lengthOfMonth());
+            BigDecimal amount = expenseRepository.sumAmountByStatusAndDateBetween(
+                    ExpenseStatus.RECORDED, monthStart, monthEnd);
+            expenseByMonth.put(monthStart.toString().substring(0, 7), amount);
+        }
+
+        return paidByMonth.keySet().stream()
+                .map(month -> {
+                    BigDecimal paid = paidByMonth.get(month);
+                    BigDecimal expense = expenseByMonth.get(month);
+                    return new FinanceMonthlyResponse(month, paid, expense, paid.subtract(expense));
+                })
                 .toList();
     }
 
