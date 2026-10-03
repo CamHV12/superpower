@@ -37,6 +37,7 @@ class PaymentServiceTest {
         when(invoice.getInvoiceNumber()).thenReturn("INV-001");
         when(invoice.getTotalAmount()).thenReturn(new BigDecimal("1000000"));
         when(invoice.getStatus()).thenReturn(InvoiceStatus.SENT);
+        when(invoice.getIssueDate()).thenReturn(LocalDate.of(2026, 10, 1));
         when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
         when(paymentRepository.sumAmountByInvoiceId(invoiceId)).thenReturn(new BigDecimal("600000"));
 
@@ -76,6 +77,27 @@ class PaymentServiceTest {
 
         verify(paymentRepository, never()).save(any());
         verify(invoiceRepository, never()).save(invoice);
+    }
+
+    @Test
+    void rejectsPaymentBeforeInvoiceIssueDate() {
+        Invoice invoice = mock(Invoice.class);
+        UUID invoiceId = UUID.randomUUID();
+
+        when(invoice.getId()).thenReturn(invoiceId);
+        when(invoice.getStatus()).thenReturn(InvoiceStatus.SENT);
+        when(invoice.getIssueDate()).thenReturn(LocalDate.of(2026, 10, 3));
+        when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+
+        var request = new CreatePaymentRequest(
+                invoiceId, new BigDecimal("100000"), LocalDate.of(2026, 10, 2),
+                PaymentMethod.CASH, null, null);
+
+        assertThatThrownBy(() -> service.create(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Ngày thanh toán không được trước ngày phát hành hóa đơn");
+
+        verifyNoInteractions(paymentRepository);
     }
 
     @Test
