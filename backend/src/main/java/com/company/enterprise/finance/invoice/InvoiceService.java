@@ -6,6 +6,7 @@ import com.company.enterprise.finance.invoice.dto.CreateInvoiceRequest;
 import com.company.enterprise.finance.invoice.dto.InvoiceResponse;
 import com.company.enterprise.finance.invoice.entity.Invoice;
 import com.company.enterprise.finance.invoice.repository.InvoiceRepository;
+import com.company.enterprise.finance.payment.repository.PaymentRepository;
 import com.company.enterprise.project.entity.Project;
 import com.company.enterprise.project.repository.ProjectRepository;
 import org.springframework.data.domain.Page;
@@ -21,11 +22,14 @@ public class InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final CustomerRepository customerRepository;
     private final ProjectRepository projectRepository;
+    private final PaymentRepository paymentRepository;
 
-    public InvoiceService(InvoiceRepository invoiceRepository, CustomerRepository customerRepository, ProjectRepository projectRepository) {
+    public InvoiceService(InvoiceRepository invoiceRepository, CustomerRepository customerRepository,
+                          ProjectRepository projectRepository, PaymentRepository paymentRepository) {
         this.invoiceRepository = invoiceRepository;
         this.customerRepository = customerRepository;
         this.projectRepository = projectRepository;
+        this.paymentRepository = paymentRepository;
     }
 
     @Transactional
@@ -77,13 +81,16 @@ public class InvoiceService {
     private InvoiceResponse toResponse(Invoice invoice) {
         Customer customer = invoice.getCustomer();
         Project project = invoice.getProject();
+        BigDecimal paidAmount = paymentRepository.sumAmountByInvoiceId(invoice.getId());
+        BigDecimal remainingAmount = invoice.getTotalAmount().subtract(paidAmount).max(BigDecimal.ZERO);
+
         return new InvoiceResponse(invoice.getId(), invoice.getInvoiceNumber(),
                 customer.getId(), customer.getName(),
                 project == null ? null : project.getId(),
                 project == null ? null : project.getName(),
                 invoice.getIssueDate(), invoice.getDueDate(), invoice.getStatus(),
                 invoice.getSubtotal(), invoice.getTaxAmount(), invoice.getDiscountAmount(),
-                invoice.getTotalAmount(), invoice.getNotes(),
+                invoice.getTotalAmount(), paidAmount, remainingAmount, invoice.getNotes(),
                 invoice.getItems().stream()
                         .map(item -> new InvoiceResponse.InvoiceItemResponse(item.getId(), item.getDescription(),
                                 item.getQuantity(), item.getUnitPrice(), item.getAmount()))
