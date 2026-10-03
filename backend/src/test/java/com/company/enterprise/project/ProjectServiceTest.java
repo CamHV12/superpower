@@ -73,6 +73,60 @@ class ProjectServiceTest {
     }
 
     @Test
+    void rejectsUnknownCustomer() {
+        var customerId = UUID.randomUUID();
+        var request = new CreateProjectRequest(
+                "PRJ-CUSTOMER",
+                "Customer Project",
+                "Mô tả",
+                UUID.randomUUID(),
+                customerId,
+                LocalDate.of(2026, 10, 1),
+                LocalDate.of(2026, 12, 31),
+                new BigDecimal("100000000"),
+                ProjectPriority.MEDIUM
+        );
+
+        when(projectRepository.existsByCode(request.code())).thenReturn(false);
+        when(employeeRepository.findById(request.managerId()))
+                .thenReturn(java.util.Optional.of(mock(Employee.class)));
+        when(customerRepository.findById(customerId)).thenReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> projectService.create(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Không tìm thấy khách hàng");
+
+        verify(projectRepository, never()).save(any(Project.class));
+    }
+
+    @Test
+    void createsProjectWithCustomer() {
+        var customerId = UUID.randomUUID();
+        var customer = mock(com.company.enterprise.customer.entity.Customer.class);
+        var request = new CreateProjectRequest(
+                "PRJ-CUSTOMER-2",
+                "Customer Project",
+                "Mô tả",
+                UUID.randomUUID(),
+                customerId,
+                LocalDate.of(2026, 10, 1),
+                LocalDate.of(2026, 12, 31),
+                new BigDecimal("100000000"),
+                ProjectPriority.HIGH
+        );
+
+        when(projectRepository.existsByCode(request.code())).thenReturn(false);
+        when(employeeRepository.findById(request.managerId()))
+                .thenReturn(java.util.Optional.of(mock(Employee.class)));
+        when(customerRepository.findById(customerId)).thenReturn(java.util.Optional.of(customer));
+        when(projectRepository.save(any(Project.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Project result = projectService.create(request);
+
+        assertThat(result.getCustomer()).isSameAs(customer);
+    }
+
+    @Test
     void rejectsDuplicateProjectCode() {
         var request = new CreateProjectRequest(
                 "PRJ-001",
@@ -175,6 +229,7 @@ class ProjectServiceTest {
                 request.name(),
                 request.description(),
                 manager,
+                null,
                 request.priority(),
                 request.startDate(),
                 request.endDate(),
@@ -248,6 +303,7 @@ class ProjectServiceTest {
                 ProjectStatus.ACTIVE,
                 ProjectPriority.HIGH,
                 managerId,
+                null,
                 "dashboard"
         );
 
