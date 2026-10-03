@@ -12,6 +12,11 @@ export const customersService = {
     return response.data;
   },
 
+  async get(id: string) {
+    const response = await api.get<Customer>(`/customers/${id}`);
+    return response.data;
+  },
+
   async create(payload: {
     code: string;
     name: string;
