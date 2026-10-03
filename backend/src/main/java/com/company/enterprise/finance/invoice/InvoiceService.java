@@ -5,16 +5,20 @@ import com.company.enterprise.customer.repository.CustomerRepository;
 import com.company.enterprise.finance.invoice.dto.CreateInvoiceRequest;
 import com.company.enterprise.finance.invoice.dto.InvoiceResponse;
 import com.company.enterprise.finance.invoice.entity.Invoice;
+import com.company.enterprise.finance.invoice.entity.InvoiceStatus;
 import com.company.enterprise.finance.invoice.repository.InvoiceRepository;
+import com.company.enterprise.finance.invoice.repository.InvoiceSpecifications;
 import com.company.enterprise.finance.payment.repository.PaymentRepository;
 import com.company.enterprise.project.entity.Project;
 import com.company.enterprise.project.repository.ProjectRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -70,7 +74,31 @@ public class InvoiceService {
 
     @Transactional(readOnly = true)
     public Page<InvoiceResponse> findAll(Pageable pageable) {
-        return invoiceRepository.findAll(pageable).map(this::toResponse);
+        return findAll(pageable, null, null, null, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<InvoiceResponse> findAll(Pageable pageable, String keyword, InvoiceStatus status,
+                                         UUID customerId, LocalDate fromDate, LocalDate toDate) {
+        Specification<Invoice> specification = Specification.where(null);
+
+        if (keyword != null && !keyword.isBlank()) {
+            specification = specification.and(InvoiceSpecifications.keywordContains(keyword));
+        }
+        if (status != null) {
+            specification = specification.and(InvoiceSpecifications.statusEquals(status));
+        }
+        if (customerId != null) {
+            specification = specification.and(InvoiceSpecifications.customerEquals(customerId));
+        }
+        if (fromDate != null) {
+            specification = specification.and(InvoiceSpecifications.issueDateFrom(fromDate));
+        }
+        if (toDate != null) {
+            specification = specification.and(InvoiceSpecifications.issueDateTo(toDate));
+        }
+
+        return invoiceRepository.findAll(specification, pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
