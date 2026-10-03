@@ -39,14 +39,14 @@ class ExpenseServiceTest {
     }
 
     @Test
-    void rejectsUnknownExpenseOnDelete() {
+    void rejectsUnknownExpenseOnCancel() {
         UUID id = UUID.randomUUID();
         when(repository.findById(id)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.delete(id))
+        assertThatThrownBy(() -> service.cancel(id))
                 .isInstanceOf(java.util.NoSuchElementException.class)
                 .hasMessage("Không tìm thấy khoản chi");
 
-        verify(repository, never()).delete(any());
+        verify(repository, never()).save(any());
     }
 }
