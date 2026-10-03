@@ -1,5 +1,5 @@
 import { api } from '../../services/api';
-import type { CustomerOption, Invoice, InvoicePage, Payment, PaymentMethod } from './finance.types';
+import type { CustomerOption, Invoice, InvoicePage, InvoiceStatus, Payment, PaymentMethod } from './finance.types';
 
 export interface FinanceSummary {
   totalInvoiced: number;
@@ -27,7 +27,15 @@ export const financeService = {
     const response = await api.get<FinanceMonthly[]>('/finance/monthly', { params: { months } });
     return response.data;
   },
-  async listInvoices(params: { page?: number; size?: number } = {}) {
+  async listInvoices(params: {
+    page?: number;
+    size?: number;
+    keyword?: string;
+    status?: InvoiceStatus;
+    customerId?: string;
+    fromDate?: string;
+    toDate?: string;
+  } = {}) {
     const response = await api.get<InvoicePage>('/invoices', {
       params: cleanParams({ page: 0, size: 10, ...params }),
     });
