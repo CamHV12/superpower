@@ -127,6 +127,7 @@ public class Project {
         this.name = name;
         this.description = description;
         this.manager = manager;
+        this.customer = customer;
         this.priority = priority;
         this.startDate = startDate;
         this.endDate = endDate;
