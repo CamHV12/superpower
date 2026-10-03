@@ -46,6 +46,8 @@ class ProjectControllerTest {
                 "Quản lý doanh nghiệp tổng thể",
                 UUID.randomUUID(),
                 "Nguyễn Văn A",
+                null,
+                null,
                 ProjectStatus.DRAFT,
                 ProjectPriority.HIGH,
                 LocalDate.of(2026, 10, 1),
@@ -72,6 +74,7 @@ class ProjectControllerTest {
         ProjectResponse response = new ProjectResponse(
                 id, "PRJ-001", "Updated Project", "Mô tả mới",
                 UUID.randomUUID(), "Nguyễn Văn A",
+                null, null,
                 ProjectStatus.ACTIVE, ProjectPriority.URGENT,
                 LocalDate.of(2026, 10, 5), LocalDate.of(2026, 12, 31),
                 new BigDecimal("750000000"), 40,
