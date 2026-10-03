@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { LoginPage } from '../features/auth/LoginPage';
+import { EmployeesPage } from '../features/employees/EmployeesPage';
 import { ProtectedRoute } from './ProtectedRoute';
 
 function Page({ title }: { title: string }) {
@@ -16,7 +17,7 @@ export function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<DashboardPage />} />
-          <Route path="/employees" element={<Page title="Nhân sự" />} />
+          <Route path="/employees" element={<EmployeesPage />} />
           <Route path="/projects" element={<Page title="Dự án" />} />
           <Route path="/finance" element={<Page title="Tài chính" />} />
           <Route path="/customers" element={<Page title="Khách hàng" />} />
