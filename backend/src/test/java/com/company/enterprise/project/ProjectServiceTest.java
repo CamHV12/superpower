@@ -5,6 +5,8 @@ import com.company.enterprise.project.entity.Project;
 import com.company.enterprise.project.entity.ProjectPriority;
 import com.company.enterprise.project.entity.ProjectStatus;
 import com.company.enterprise.project.repository.ProjectRepository;
+import com.company.enterprise.employee.entity.Employee;
+import com.company.enterprise.employee.repository.EmployeeRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +28,9 @@ class ProjectServiceTest {
     @Mock
     ProjectRepository projectRepository;
 
+    @Mock
+    EmployeeRepository employeeRepository;
+
     @InjectMocks
     ProjectService projectService;
 
@@ -43,6 +48,8 @@ class ProjectServiceTest {
         );
 
         when(projectRepository.existsByCode(request.code())).thenReturn(false);
+        when(employeeRepository.findById(request.managerId()))
+                .thenReturn(java.util.Optional.of(mock(Employee.class)));
         when(projectRepository.save(any(Project.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
