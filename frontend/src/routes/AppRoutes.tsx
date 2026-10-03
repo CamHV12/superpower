@@ -25,7 +25,6 @@ export function AppRoutes() {
           <Route path="/projects/:id" element={<ProjectDetailPage />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/finance" element={<Page title="Tài chính" />} />
-          <Route path="/customers" element={<Page title="Khách hàng" />} />
           <Route path="/reports" element={<Page title="Báo cáo" />} />
         </Route>
       </Route>
