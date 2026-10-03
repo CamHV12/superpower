@@ -2,6 +2,8 @@ package com.company.enterprise.project;
 
 import com.company.enterprise.employee.entity.Employee;
 import com.company.enterprise.employee.repository.EmployeeRepository;
+import com.company.enterprise.customer.entity.Customer;
+import com.company.enterprise.customer.repository.CustomerRepository;
 import com.company.enterprise.project.dto.CreateProjectRequest;
 import com.company.enterprise.project.dto.ProjectResponse;
 import com.company.enterprise.project.dto.UpdateProjectRequest;
@@ -19,14 +21,16 @@ import java.util.UUID;
 public class ProjectService {
     private final ProjectRepository projectRepository;
     private final EmployeeRepository employeeRepository;
-    public ProjectService(ProjectRepository projectRepository, EmployeeRepository employeeRepository) { this.projectRepository = projectRepository; this.employeeRepository = employeeRepository; }
+    private final CustomerRepository customerRepository;
+    public ProjectService(ProjectRepository projectRepository, EmployeeRepository employeeRepository, CustomerRepository customerRepository) { this.projectRepository = projectRepository; this.employeeRepository = employeeRepository; this.customerRepository = customerRepository; }
 
     @Transactional
     public Project create(CreateProjectRequest request) {
         if (projectRepository.existsByCode(request.code())) throw new IllegalArgumentException("Mã dự án đã tồn tại");
         validateDates(request);
         Employee manager = employeeRepository.findById(request.managerId()).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người quản lý dự án"));
-        return projectRepository.save(new Project(request.code(), request.name(), request.description(), manager, request.priority(), request.startDate(), request.endDate(), request.budget()));
+        Customer customer = findCustomer(request.customerId());
+        return projectRepository.save(new Project(request.code(), request.name(), request.description(), manager, customer, request.priority(), request.startDate(), request.endDate(), request.budget()));
     }
 
     @Transactional
@@ -41,6 +45,7 @@ public class ProjectService {
             com.company.enterprise.project.entity.ProjectStatus status,
             com.company.enterprise.project.entity.ProjectPriority priority,
             UUID managerId,
+            UUID customerId,
             String keyword) {
         Specification<Project> specification = Specification.where(null);
 
@@ -53,6 +58,7 @@ public class ProjectService {
         if (managerId != null) {
             specification = specification.and(ProjectSpecifications.managerEquals(managerId));
         }
+        if (customerId != null) specification = specification.and(ProjectSpecifications.customerEquals(customerId));
         if (keyword != null && !keyword.isBlank()) {
             specification = specification.and(ProjectSpecifications.keywordContains(keyword));
         }
@@ -76,9 +82,10 @@ public class ProjectService {
                 .orElseThrow(() -> new java.util.NoSuchElementException("Không tìm thấy dự án"));
         Employee manager = employeeRepository.findById(request.managerId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người quản lý dự án"));
+        Customer customer = findCustomer(request.customerId());
 
         project.update(
-                request.name(), request.description(), manager,
+                request.name(), request.description(), manager, customer,
                 request.priority(), request.startDate(), request.endDate(),
                 request.budget(), request.status(), request.progress()
         );
@@ -107,7 +114,13 @@ public class ProjectService {
 
     private ProjectResponse toResponse(Project project) {
         Employee manager = project.getManager();
-        return new ProjectResponse(project.getId(), project.getCode(), project.getName(), project.getDescription(), manager.getId(), manager.getFullName(), project.getStatus(), project.getPriority(), project.getStartDate(), project.getEndDate(), project.getBudget(), project.getProgress(), project.getCreatedAt(), project.getUpdatedAt());
+        Customer customer = project.getCustomer();
+        return new ProjectResponse(project.getId(), project.getCode(), project.getName(), project.getDescription(), manager.getId(), manager.getFullName(), customer == null ? null : customer.getId(), customer == null ? null : customer.getName(), project.getStatus(), project.getPriority(), project.getStartDate(), project.getEndDate(), project.getBudget(), project.getProgress(), project.getCreatedAt(), project.getUpdatedAt());
+    }
+
+    private Customer findCustomer(UUID customerId) {
+        if (customerId == null) return null;
+        return customerRepository.findById(customerId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng"));
     }
 
     private void validateDates(CreateProjectRequest request) {
