@@ -48,11 +48,13 @@ export function DashboardPage() {
         </select>
       </div>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
         {[
           ['Tổng giá trị hóa đơn', summary ? formatMoney(summary.totalInvoiced) : '—'],
           ['Đã thanh toán', summary ? formatMoney(summary.totalPaid) : '—'],
           ['Còn phải thu', summary ? formatMoney(summary.totalReceivable) : '—'],
+          ['Tổng chi phí', summary ? formatMoney(summary.totalExpense) : '—'],
+          ['Dòng tiền ròng', summary ? formatMoney(summary.netCashFlow) : '—'],
           ['Hóa đơn quá hạn', summary ? `${summary.overdueInvoices} · ${formatMoney(summary.overdueAmount)}` : '—'],
         ].map(([label, value]) => (
           <Card key={label}>
