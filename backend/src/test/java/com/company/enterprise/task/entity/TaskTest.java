@@ -8,12 +8,14 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 class TaskTest {
 
     @Test
     void newTaskStartsAsTodoWithZeroProgress() {
-        Project project = new Project();
+        Project project = mock(Project.class);
         Employee assignee = new Employee(
                 UUID.randomUUID(), "Nguyễn Văn A", "a@example.com", "0900000000", true);
 
@@ -35,11 +37,11 @@ class TaskTest {
 
     @Test
     void rejectsInvalidProgress() {
-        Project project = new Project();
+        Project project = mock(Project.class);
         Employee assignee = new Employee(
                 UUID.randomUUID(), "Nguyễn Văn A", "a@example.com", "a@example.com", true);
 
-        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+        assertThatThrownBy(() ->
                 new Task(
                         project, "TASK-002", "Invalid", null, assignee,
                         TaskPriority.MEDIUM,
