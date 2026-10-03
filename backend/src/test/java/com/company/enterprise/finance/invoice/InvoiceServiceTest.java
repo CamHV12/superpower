@@ -65,6 +65,30 @@ class InvoiceServiceTest {
     }
 
     @Test
+    void findsInvoicesWithFilters() {
+        var pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        UUID customerId = UUID.randomUUID();
+
+        when(invoiceRepository.findAll(
+                any(org.springframework.data.jpa.domain.Specification.class),
+                eq(pageable)))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
+
+        var result = service.findAll(
+                pageable,
+                "ACME",
+                com.company.enterprise.finance.invoice.entity.InvoiceStatus.SENT,
+                customerId,
+                LocalDate.of(2026, 10, 1),
+                LocalDate.of(2026, 10, 31));
+
+        assertThat(result.getContent()).isEmpty();
+        verify(invoiceRepository).findAll(
+                any(org.springframework.data.jpa.domain.Specification.class),
+                eq(pageable));
+    }
+
+    @Test
     void rejectsDuplicateInvoiceNumber() {
         var request = new CreateInvoiceRequest(
                 "INV-001", UUID.randomUUID(), null,
