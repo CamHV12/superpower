@@ -16,6 +16,8 @@ export interface Project {
   description?: string | null;
   managerId: string;
   managerName: string;
+  customerId?: string | null;
+  customerName?: string | null;
   status: ProjectStatus;
   priority: ProjectPriority;
   startDate: string;
@@ -70,5 +72,6 @@ export interface ProjectFilters {
   status?: ProjectStatus;
   priority?: ProjectPriority;
   managerId?: string;
+  customerId?: string;
   keyword?: string;
 }
