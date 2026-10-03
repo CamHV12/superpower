@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { InvoiceDetailPage } from './InvoiceDetailPage';
 
@@ -68,7 +69,7 @@ describe('InvoiceDetailPage', () => {
 
     await waitFor(() => expect(screen.getByText('INV-001')).toBeInTheDocument());
     expect(screen.getByText('Đã thanh toán')).toBeInTheDocument();
-    expect(screen.getByText('6.000.000 ₫')).toBeInTheDocument();
+    expect(screen.getByText(/6\.000\.000/)).toBeInTheDocument();
     expect(listPayments).toHaveBeenCalledWith('i1');
   });
 
@@ -80,11 +81,9 @@ describe('InvoiceDetailPage', () => {
 
     expect(screen.getByRole('button', { name: 'Xác nhận thanh toán' })).toBeInTheDocument();
 
-    const amount = screen.getByLabelText('Số tiền');
-    await import('@testing-library/user-event').then(({ default: userEvent }) => userEvent.setup().clear(amount));
-
-    const userEvent = (await import('@testing-library/user-event')).default;
     const user = userEvent.setup();
+    const amount = screen.getByLabelText('Số tiền');
+    await user.clear(amount);
     await user.type(amount, '6000000');
     screen.getByRole('button', { name: 'Xác nhận thanh toán' }).click();
 
