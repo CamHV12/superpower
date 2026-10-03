@@ -6,6 +6,8 @@ public record FinanceSummaryResponse(
         BigDecimal totalInvoiced,
         BigDecimal totalPaid,
         BigDecimal totalReceivable,
+        BigDecimal totalExpense,
+        BigDecimal netCashFlow,
         long overdueInvoices,
         BigDecimal overdueAmount
 ) {}
