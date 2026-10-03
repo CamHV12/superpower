@@ -21,6 +21,8 @@ public record InvoiceResponse(
         BigDecimal taxAmount,
         BigDecimal discountAmount,
         BigDecimal totalAmount,
+        BigDecimal paidAmount,
+        BigDecimal remainingAmount,
         String notes,
         List<InvoiceItemResponse> items
 ) {
