@@ -1,6 +1,7 @@
 package com.company.enterprise.finance;
 
 import com.company.enterprise.finance.dto.FinanceSummaryResponse;
+import com.company.enterprise.finance.dto.FinanceMonthlyResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,6 +21,25 @@ class FinanceDashboardControllerTest {
     @Autowired MockMvc mockMvc;
 
     @MockBean FinanceDashboardService service;
+
+
+    @Test
+    void returnsMonthlyCashFlow() throws Exception {
+        when(service.monthly(6)).thenReturn(java.util.List.of(
+                new FinanceMonthlyResponse(
+                        "2026-10",
+                        new BigDecimal("1000000"),
+                        new BigDecimal("400000"),
+                        new BigDecimal("600000"))
+        ));
+
+        mockMvc.perform(get("/api/v1/finance/monthly").param("months", "6"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].month").value("2026-10"))
+                .andExpect(jsonPath("$[0].paidAmount").value(1000000))
+                .andExpect(jsonPath("$[0].expenseAmount").value(400000))
+                .andExpect(jsonPath("$[0].netCashFlow").value(600000));
+    }
 
     @Test
     void returnsFinanceSummary() throws Exception {
