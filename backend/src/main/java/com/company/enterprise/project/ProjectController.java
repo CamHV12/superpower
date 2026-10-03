@@ -30,8 +30,9 @@ public class ProjectController {
             @RequestParam(required = false) ProjectStatus status,
             @RequestParam(required = false) ProjectPriority priority,
             @RequestParam(required = false) UUID managerId,
+            @RequestParam(required = false) UUID customerId,
             @RequestParam(required = false) String keyword) {
-        return projectService.findAll(pageable, status, priority, managerId, keyword);
+        return projectService.findAll(pageable, status, priority, managerId, customerId, keyword);
     }
 
     @GetMapping("/{id}")
