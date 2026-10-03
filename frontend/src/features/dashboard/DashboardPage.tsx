@@ -74,7 +74,7 @@ export function DashboardPage() {
         <Card>
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="font-semibold">Tiền đã thu</h2>
+              <h2 className="font-semibold">Dòng tiền theo tháng</h2>
               <p className="text-xs text-slate-500">{periodLabel}</p>
             </div>
             <Badge variant="success">Dữ liệu thật</Badge>
@@ -85,8 +85,9 @@ export function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value) => [formatMoney(Number(value)), 'Đã thu']} />
-                <Area type="monotone" dataKey="paidAmount" stroke="#2563eb" fill="#2563eb" fillOpacity={0.12} name="Đã thu" />
+                <Tooltip formatter={(value, name) => [formatMoney(Number(value)), name === 'paidAmount' ? 'Đã thu' : 'Chi phí']} />
+                <Area type="monotone" dataKey="paidAmount" name="Đã thu" />
+                <Area type="monotone" dataKey="expenseAmount" name="Chi phí" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
