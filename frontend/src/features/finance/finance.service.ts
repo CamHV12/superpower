@@ -14,6 +14,8 @@ export interface FinanceSummary {
 export interface FinanceMonthly {
   month: string;
   paidAmount: number;
+  expenseAmount: number;
+  netCashFlow: number;
 }
 
 const cleanParams = (params: Record<string, unknown>) =>
