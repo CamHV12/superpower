@@ -110,6 +110,14 @@ public class Invoice {
     public String getNotes() { return notes; }
     public List<InvoiceItem> getItems() { return List.copyOf(items); }
 
+    public void updatePaymentStatus(BigDecimal paidAmount) {
+        if (paidAmount.compareTo(totalAmount) >= 0) {
+            status = InvoiceStatus.PAID;
+        } else if (paidAmount.signum() > 0) {
+            status = InvoiceStatus.PARTIALLY_PAID;
+        }
+    }
+
     @PrePersist
     void onCreate() { Instant now = Instant.now(); createdAt = now; updatedAt = now; }
 
