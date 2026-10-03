@@ -1,5 +1,5 @@
 import { api } from '../../services/api';
-import type { Customer, CustomerPage } from '../customers/customers.types';
+import type { CustomerPage } from '../customers/customers.types';
 import type {
   Employee,
   PageResponse,
