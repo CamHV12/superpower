@@ -40,3 +40,29 @@ export const reportsService = {
     return response.data;
   },
 };
+
+export interface OperationalReport {
+  projectStatuses: { status: string; count: number }[];
+  taskStatuses: { status: string; count: number }[];
+  employeePerformance: {
+    employeeId: string;
+    employeeName: string;
+    totalTasks: number;
+    completedTasks: number;
+    overdueTasks: number;
+    estimatedHours: number;
+    actualHours: number;
+  }[];
+  customerPerformance: {
+    customerId: string;
+    customerName: string;
+    projects: number;
+    activeProjects: number;
+    budget: number;
+  }[];
+}
+
+export async function getOperationalReport() {
+  const response = await api.get<OperationalReport>('/reports/operational');
+  return response.data;
+}
