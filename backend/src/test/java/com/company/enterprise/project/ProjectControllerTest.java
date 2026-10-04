@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import com.company.enterprise.security.JwtAuthenticationFilter;
 import com.company.enterprise.security.JwtService;
+import com.company.enterprise.security.CustomUserDetailsService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -40,6 +41,8 @@ class ProjectControllerTest {
     ProjectService projectService;
     @MockBean
     JwtService jwtService;
+    @MockBean
+    CustomUserDetailsService customUserDetailsService;
 
     @Test
     void returnsPagedProjects() throws Exception {
