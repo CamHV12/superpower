@@ -9,11 +9,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public interface ExpenseRepository extends JpaRepository<Expense, UUID>, JpaSpecificationExecutor<Expense> {
 
-    java.util.List<Expense> findByStatusAndExpenseDateBetweenOrderByExpenseDateAsc(
+    List<Expense> findByStatusAndExpenseDateBetweenOrderByExpenseDateAsc(
             ExpenseStatus status, LocalDate from, LocalDate to);
     @Query("""
             select coalesce(sum(e.amount), 0)
@@ -32,4 +33,11 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID>, JpaSpec
             @Param("status") ExpenseStatus status,
             @Param("from") LocalDate from,
             @Param("to") LocalDate to);
+
+    @Query("""
+            select e.id, e.category, e.amount, e.createdAt
+            from Expense e
+            order by e.createdAt desc
+            """)
+    List<Object[]> findRecentActivities();
 }
