@@ -10,16 +10,18 @@ export interface AuthUser {
 
 interface AuthState {
   accessToken: string | null;
+  refreshToken: string | null;
   user: AuthUser | null;
-  setSession: (accessToken: string, user: AuthUser) => void;
+  setSession: (accessToken: string, refreshToken: string, user: AuthUser) => void;
   logout: () => void;
   isAuthenticated: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   accessToken: null,
+  refreshToken: null,
   user: null,
-  setSession: (accessToken, user) => set({ accessToken, user }),
-  logout: () => set({ accessToken: null, user: null }),
+  setSession: (accessToken, refreshToken, user) => set({ accessToken, refreshToken, user }),
+  logout: () => set({ accessToken: null, refreshToken: null, user: null }),
   isAuthenticated: () => Boolean(get().accessToken && get().user),
 }));
