@@ -3,15 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { useUiStore } from '../../stores/ui.store';
 import { useAuthStore } from '../../stores/auth.store';
 import { NotificationBell } from './NotificationBell';
+import { logout as logoutApi } from '../../services/auth.service';
 
 export function Header() {
   const theme = useUiStore((state) => state.theme);
   const toggleTheme = useUiStore((state) => state.toggleTheme);
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const refreshToken = useAuthStore((state) => state.refreshToken);
   const navigate = useNavigate();
 
-  function handleLogout() {
+  async function handleLogout() {
+    if (refreshToken) {
+      try {
+        await logoutApi(refreshToken);
+      } catch {
+        // Local logout must still complete if the server is unavailable.
+      }
+    }
     logout();
     navigate('/login', { replace: true });
   }
