@@ -6,6 +6,8 @@ import com.company.enterprise.auth.entity.Role;
 import com.company.enterprise.auth.entity.User;
 import com.company.enterprise.auth.repository.UserRepository;
 import com.company.enterprise.auth.repository.RefreshTokenRepository;
+import com.company.enterprise.auth.repository.PasswordResetTokenRepository;
+import com.company.enterprise.auth.entity.PasswordResetToken;
 import com.company.enterprise.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +41,9 @@ class AuthServiceTest {
 
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @InjectMocks
     private AuthService authService;
@@ -164,6 +169,60 @@ class AuthServiceTest {
 
         assertThat(token.getRevokedAt()).isNotNull();
         verify(refreshTokenRepository).save(token);
+    }
+
+    @Test
+    void requestPasswordResetReturnsTokenForExistingUser() {
+        UUID userId = UUID.randomUUID();
+        User user = new User(userId, "admin@enterprise.local", "hashed", "Nguyen", "An", true,
+                Set.of(new Role(UUID.randomUUID(), "ADMIN")));
+        when(userRepository.findByEmail("admin@enterprise.local")).thenReturn(java.util.Optional.of(user));
+
+        var response = authService.requestPasswordReset("admin@enterprise.local");
+
+        assertThat(response.message()).contains("If the account exists");
+        assertThat(response.resetToken()).isNotBlank();
+        verify(passwordResetTokenRepository).save(any(PasswordResetToken.class));
+    }
+
+    @Test
+    void requestPasswordResetDoesNotRevealUnknownUser() {
+        when(userRepository.findByEmail("unknown@enterprise.local")).thenReturn(java.util.Optional.empty());
+
+        var response = authService.requestPasswordReset("unknown@enterprise.local");
+
+        assertThat(response.message()).contains("If the account exists");
+        assertThat(response.resetToken()).isNull();
+        verifyNoInteractions(passwordResetTokenRepository);
+    }
+
+    @Test
+    void resetPasswordUpdatesPasswordAndConsumesToken() {
+        UUID userId = UUID.randomUUID();
+        User user = new User(userId, "admin@enterprise.local", "old-hash", "Nguyen", "An", true,
+                Set.of(new Role(UUID.randomUUID(), "ADMIN")));
+        PasswordResetToken token = new PasswordResetToken(UUID.randomUUID(), userId, "hash", java.time.Instant.now().plusSeconds(1800));
+        when(passwordResetTokenRepository.findByTokenHash(anyString())).thenReturn(java.util.Optional.of(token));
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(user));
+        when(passwordEncoder.encode("new-password")).thenReturn("new-hash");
+
+        authService.resetPassword("raw-token", "new-password");
+
+        assertThat(user.getPasswordHash()).isEqualTo("new-hash");
+        assertThat(token.getUsedAt()).isNotNull();
+        verify(userRepository).save(user);
+        verify(passwordResetTokenRepository).save(token);
+    }
+
+    @Test
+    void resetPasswordRejectsExpiredToken() {
+        PasswordResetToken token = new PasswordResetToken(UUID.randomUUID(), UUID.randomUUID(), "hash", java.time.Instant.now().minusSeconds(1));
+        when(passwordResetTokenRepository.findByTokenHash(anyString())).thenReturn(java.util.Optional.of(token));
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> authService.resetPassword("raw-token", "new-password"))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
+
+        verify(userRepository, never()).save(any(User.class));
     }
 
 }
