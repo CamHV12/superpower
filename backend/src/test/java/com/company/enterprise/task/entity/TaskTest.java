@@ -28,7 +28,7 @@ class TaskTest {
                 TaskPriority.HIGH,
                 LocalDate.of(2026, 10, 5),
                 LocalDate.of(2026, 10, 10),
-                8
+                new java.math.BigDecimal("8")
         );
 
         assertThat(task.getStatus()).isEqualTo(TaskStatus.TODO);
@@ -47,7 +47,7 @@ class TaskTest {
                         TaskPriority.MEDIUM,
                         LocalDate.of(2026, 10, 5),
                         LocalDate.of(2026, 10, 10),
-                        8
+                        new java.math.BigDecimal("8")
                 ).setProgress(101)
         )
                 .isInstanceOf(IllegalArgumentException.class)
