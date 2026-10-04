@@ -1,7 +1,8 @@
-import { Bell, LogOut, Moon, Search, Sun } from 'lucide-react';
+import { LogOut, Moon, Search, Sun } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUiStore } from '../../stores/ui.store';
 import { useAuthStore } from '../../stores/auth.store';
+import { NotificationBell } from './NotificationBell';
 
 export function Header() {
   const theme = useUiStore((state) => state.theme);
@@ -25,7 +26,7 @@ export function Header() {
         <input aria-label="Tìm kiếm" placeholder="Tìm kiếm..." className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-3 text-sm outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-900" />
       </div>
       <div className="ml-auto flex items-center gap-2">
-        <button type="button" aria-label="Thông báo" className="rounded-xl p-2 hover:bg-slate-100 dark:hover:bg-slate-800"><Bell className="size-5" /></button>
+        <NotificationBell />
         <button type="button" aria-label={theme === 'light' ? 'Bật chế độ tối' : 'Bật chế độ sáng'} onClick={toggleTheme} className="rounded-xl p-2 hover:bg-slate-100 dark:hover:bg-slate-800">
           {theme === 'light' ? <Moon className="size-5" /> : <Sun className="size-5" />}
         </button>
