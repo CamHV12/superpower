@@ -108,6 +108,8 @@ public class Project {
     public LocalDate getEndDate() { return endDate; }
     public BigDecimal getBudget() { return budget; }
     public int getProgress() { return progress; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
 
     public void setProgress(int progress) {
         this.progress = progress;
