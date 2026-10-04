@@ -1,15 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Badge } from '../components/ui/Badge';
-import { Card } from '../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
+import { Card } from '../../components/ui/Card';
 import { financeService } from '../finance/finance.service';
-
-const activities = [
-  ['Nguyễn Minh Anh', 'Tạo dự án Website E-commerce', '10 phút trước', 'info'],
-  ['Trần Quốc Bảo', 'Hoàn thành task Thiết kế database', '32 phút trước', 'success'],
-  ['Lê Thu Hà', 'Tạo hóa đơn INV-2026-018', '1 giờ trước', 'warning'],
-  ['Phạm Đức Long', 'Cập nhật tiến độ Mobile App lên 80%', '2 giờ trước', 'info'],
-] as const;
+import { dashboardService, type DashboardOverview } from './dashboard.service';
 
 const formatMoney = (value: number) => new Intl.NumberFormat('vi-VN', {
   style: 'currency',
@@ -21,18 +15,24 @@ export function DashboardPage() {
   const [period, setPeriod] = useState('6 tháng gần nhất');
   const [summary, setSummary] = useState<Awaited<ReturnType<typeof financeService.summary>> | null>(null);
   const [monthly, setMonthly] = useState<Awaited<ReturnType<typeof financeService.monthly>>>([]);
-  const [financeError, setFinanceError] = useState('');
-
-  const periodLabel = useMemo(() => period, [period]);
+  const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [dashboardError, setDashboardError] = useState('');
 
   useEffect(() => {
     const months = period.startsWith('12') ? 12 : 6;
-    Promise.all([financeService.summary(), financeService.monthly(months)])
-      .then(([summaryData, monthlyData]) => {
+    setDashboardError('');
+
+    Promise.all([
+      financeService.summary(),
+      financeService.monthly(months),
+      dashboardService.overview(),
+    ])
+      .then(([summaryData, monthlyData, overviewData]) => {
         setSummary(summaryData);
         setMonthly(monthlyData);
+        setOverview(overviewData);
       })
-      .catch(() => setFinanceError('Chưa thể tải dữ liệu tài chính.'));
+      .catch(() => setDashboardError('Chưa thể tải đầy đủ dữ liệu dashboard.'));
   }, [period]);
 
   return (
@@ -48,68 +48,75 @@ export function DashboardPage() {
         </select>
       </div>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
-        {[
-          ['Tổng giá trị hóa đơn', summary ? formatMoney(summary.totalInvoiced) : '—'],
-          ['Đã thanh toán', summary ? formatMoney(summary.totalPaid) : '—'],
-          ['Còn phải thu', summary ? formatMoney(summary.totalReceivable) : '—'],
-          ['Tổng chi phí', summary ? formatMoney(summary.totalExpense) : '—'],
-          ['Dòng tiền ròng', summary ? formatMoney(summary.netCashFlow) : '—'],
-          ['Hóa đơn quá hạn', summary ? `${summary.overdueInvoices} · ${formatMoney(summary.overdueAmount)}` : '—'],
-        ].map(([label, value]) => (
-          <Card key={label}>
-            <p className="text-sm text-slate-500">{label}</p>
-            <p className="mt-2 text-xl font-bold">{value}</p>
-          </Card>
-        ))}
-      </section>
-
-      {financeError && (
+      {dashboardError && (
         <Card>
-          <p className="text-sm text-red-600">{financeError}</p>
+          <p className="text-sm text-red-600">{dashboardError}</p>
         </Card>
       )}
 
-      <section className="grid gap-6 xl:grid-cols-[2fr_1fr]">
-        <Card>
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold">Dòng tiền theo tháng</h2>
-              <p className="text-xs text-slate-500">{periodLabel}</p>
-            </div>
-            <Badge variant="success">Dữ liệu thật</Badge>
-          </div>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthly}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(value, name) => [formatMoney(Number(value)), name === 'paidAmount' ? 'Đã thu' : 'Chi phí']} />
-                <Area type="monotone" dataKey="paidAmount" name="Đã thu" />
-                <Area type="monotone" dataKey="expenseAmount" name="Chi phí" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        <Card>
-          <h2 className="font-semibold">Hoạt động gần đây</h2>
-          <div className="mt-4 space-y-4">
-            {activities.map(([user, action, time, variant]) => (
-              <div key={user + action} className="flex gap-3">
-                <div className="mt-1 size-2 shrink-0 rounded-full bg-blue-500" />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium">{user}</p>
-                  <p className="text-sm text-slate-500">{action}</p>
-                  <p className="mt-1 text-xs text-slate-400">{time}</p>
-                </div>
-                <Badge variant={variant}>{variant === 'success' ? 'Xong' : variant === 'warning' ? 'Tài chính' : 'Cập nhật'}</Badge>
-              </div>
-            ))}
-          </div>
-        </Card>
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-semibold">Vận hành</h2>
+          <Badge variant="success">Dữ liệu thật</Badge>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            ['Nhân sự đang hoạt động', overview ? `${overview.activeEmployees} / ${overview.totalEmployees}` : '—'],
+            ['Dự án đang hoạt động', overview ? `${overview.activeProjects} / ${overview.totalProjects}` : '—'],
+            ['Khách hàng đang hoạt động', overview ? `${overview.activeCustomers} / ${overview.totalCustomers}` : '—'],
+            ['Task quá hạn', overview ? `${overview.overdueTasks} / ${overview.totalTasks}` : '—'],
+          ].map(([label, value]) => (
+            <Card key={label}>
+              <p className="text-sm text-slate-500">{label}</p>
+              <p className="mt-2 text-2xl font-bold">{value}</p>
+            </Card>
+          ))}
+        </div>
       </section>
+
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-semibold">Tài chính</h2>
+          <Badge variant="success">Dữ liệu thật</Badge>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+          {[
+            ['Tổng giá trị hóa đơn', summary ? formatMoney(summary.totalInvoiced) : '—'],
+            ['Đã thanh toán', summary ? formatMoney(summary.totalPaid) : '—'],
+            ['Còn phải thu', summary ? formatMoney(summary.totalReceivable) : '—'],
+            ['Tổng chi phí', summary ? formatMoney(summary.totalExpense) : '—'],
+            ['Dòng tiền ròng', summary ? formatMoney(summary.netCashFlow) : '—'],
+            ['Hóa đơn quá hạn', summary ? `${summary.overdueInvoices} · ${formatMoney(summary.overdueAmount)}` : '—'],
+          ].map(([label, value]) => (
+            <Card key={label}>
+              <p className="text-sm text-slate-500">{label}</p>
+              <p className="mt-2 text-xl font-bold">{value}</p>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <Card>
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold">Dòng tiền theo tháng</h2>
+            <p className="text-xs text-slate-500">{period}</p>
+          </div>
+          <Badge variant="success">Dữ liệu thật</Badge>
+        </div>
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={monthly}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip formatter={(value, name) => [formatMoney(Number(value)), name === 'paidAmount' ? 'Đã thu' : 'Chi phí']} />
+              <Area type="monotone" dataKey="paidAmount" name="Đã thu" />
+              <Area type="monotone" dataKey="expenseAmount" name="Chi phí" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
     </div>
   );
 }
