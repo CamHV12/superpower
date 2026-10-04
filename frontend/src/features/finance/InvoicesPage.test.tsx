@@ -57,7 +57,7 @@ describe('InvoicesPage', () => {
     render(<MemoryRouter><InvoicesPage /></MemoryRouter>);
     await waitFor(() => expect(screen.getByText('INV-001')).toBeInTheDocument());
 
-    screen.getByRole('button', { name: 'Tạo hóa đơn' }).click();
+    await userEvent.click(screen.getByRole('button', { name: 'Tạo hóa đơn' }));
     expect(screen.getAllByPlaceholderText('Dịch vụ phát triển phần mềm')).toHaveLength(1);
 
     screen.getByRole('button', { name: 'Thêm dòng' }).click();
