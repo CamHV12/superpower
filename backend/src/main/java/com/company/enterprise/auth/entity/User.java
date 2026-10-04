@@ -72,6 +72,7 @@ public class User {
     public UUID getId() { return id; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
     public boolean isEnabled() { return enabled; }
