@@ -108,6 +108,8 @@ public class Task {
     public BigDecimal getEstimatedHours() { return estimatedHours; }
     public BigDecimal getActualHours() { return actualHours; }
     public int getProgress() { return progress; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
 
     public void setProgress(int progress) {
         validateProgress(progress);
