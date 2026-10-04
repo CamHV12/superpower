@@ -61,7 +61,7 @@ describe('ExpensesPage', () => {
     await waitFor(() => expect(screen.getByText('Văn phòng')).toBeInTheDocument());
     screen.getByRole('button', { name: 'Ghi nhận khoản chi' }).click();
 
-    expect(screen.getByText('Danh mục')).toBeInTheDocument();
+    expect(screen.getAllByText('Danh mục').length).toBeGreaterThanOrEqual(2);
     expect(screen.getByRole('button', { name: 'Lưu khoản chi' })).toBeInTheDocument();
   });
 });
