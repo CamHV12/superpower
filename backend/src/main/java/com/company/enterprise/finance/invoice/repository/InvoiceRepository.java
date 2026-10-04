@@ -16,5 +16,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
             from Invoice i
             order by i.createdAt desc
             """)
-    List<Object[]> findRecentActivities();
+    List<Object[]> findRecentActivities(Pageable pageable);
 }
+import org.springframework.data.domain.Pageable;
