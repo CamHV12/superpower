@@ -45,6 +45,8 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public DashboardOperationalResponse operational() {
+        LocalDate today = LocalDate.now();
+
         List<DashboardStatusCount> projects = projectRepository.countGroupedByStatus().stream()
                 .map(row -> new DashboardStatusCount(((ProjectStatus) row[0]).name(), ((Number) row[1]).longValue()))
                 .sorted(Comparator.comparing(DashboardStatusCount::status))
@@ -55,6 +57,27 @@ public class DashboardService {
                 .sorted(Comparator.comparing(DashboardStatusCount::status))
                 .toList();
 
-        return new DashboardOperationalResponse(projects, tasks);
+        List<DashboardEmployeeWorkload> employeeWorkloads = taskRepository.workloadByEmployee(today).stream()
+                .map(row -> new DashboardEmployeeWorkload(
+                        (java.util.UUID) row[0],
+                        (String) row[1],
+                        ((Number) row[2]).longValue(),
+                        ((Number) row[3]).longValue(),
+                        (java.math.BigDecimal) row[4],
+                        (java.math.BigDecimal) row[5]
+                ))
+                .toList();
+
+        List<DashboardCustomerKpi> customerKpis = projectRepository.kpisByCustomer().stream()
+                .map(row -> new DashboardCustomerKpi(
+                        (java.util.UUID) row[0],
+                        (String) row[1],
+                        ((Number) row[2]).longValue(),
+                        ((Number) row[3]).longValue(),
+                        (java.math.BigDecimal) row[4]
+                ))
+                .toList();
+
+        return new DashboardOperationalResponse(projects, tasks, employeeWorkloads, customerKpis);
     }
 }
