@@ -50,9 +50,9 @@ class ReportServiceTest {
         when(customerRepository.count()).thenReturn(6L);
         when(customerRepository.countByActiveTrue()).thenReturn(5L);
 
-        when(invoiceRepository.sumTotalAmountByIssueDateBetween(from, from)).thenReturn(new BigDecimal("400"));
-        when(paymentRepository.sumAmountByPaymentDateBetween(from, from)).thenReturn(new BigDecimal("300"));
-        when(expenseRepository.sumRecordedAmountByExpenseDateBetween(from, from)).thenReturn(new BigDecimal("100"));
+        when(invoiceRepository.sumTotalAmountByIssueDateBetween(from, LocalDate.of(2026, 1, 31))).thenReturn(new BigDecimal("400"));
+        when(paymentRepository.sumAmountByPaymentDateBetween(from, LocalDate.of(2026, 1, 31))).thenReturn(new BigDecimal("300"));
+        when(expenseRepository.sumRecordedAmountByExpenseDateBetween(from, LocalDate.of(2026, 1, 31))).thenReturn(new BigDecimal("100"));
         when(invoiceRepository.sumTotalAmountByIssueDateBetween(LocalDate.of(2026, 2, 1), to)).thenReturn(new BigDecimal("600"));
         when(paymentRepository.sumAmountByPaymentDateBetween(LocalDate.of(2026, 2, 1), to)).thenReturn(new BigDecimal("400"));
         when(expenseRepository.sumRecordedAmountByExpenseDateBetween(LocalDate.of(2026, 2, 1), to)).thenReturn(new BigDecimal("100"));
