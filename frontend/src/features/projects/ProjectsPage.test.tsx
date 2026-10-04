@@ -7,18 +7,21 @@ import { ProjectsPage } from './ProjectsPage';
 const list = vi.hoisted(() => vi.fn());
 const listEmployees = vi.hoisted(() => vi.fn());
 const create = vi.hoisted(() => vi.fn());
+const listCustomers = vi.hoisted(() => vi.fn());
 
 vi.mock('./projects.service', () => ({
   projectsService: {
     list,
     listEmployees,
     create,
+    listCustomers,
   },
 }));
 
 describe('ProjectsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    listCustomers.mockResolvedValue({ content: [{ id: 'c1', name: 'Công ty ABC' }] });
     list.mockResolvedValue({
       content: [{
         id: 'p1',
@@ -58,7 +61,7 @@ describe('ProjectsPage', () => {
     render(<MemoryRouter><ProjectsPage /></MemoryRouter>);
 
     expect(screen.getByRole('heading', { name: 'Dự án' })).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByText('Enterprise Dashboard')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Enterprise Dashboard/)).toBeInTheDocument());
     expect(screen.getByText('Nguyễn Văn A')).toBeInTheDocument();
     expect(list).toHaveBeenCalled();
     expect(listEmployees).toHaveBeenCalled();
