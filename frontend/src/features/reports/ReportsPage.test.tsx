@@ -51,7 +51,7 @@ describe('ReportsPage', () => {
   it('renders financial, project and customer report data', async () => {
     render(<ReportsPage />);
 
-    await waitFor(() => expect(screen.getByText('Website')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Website/)).toBeInTheDocument());
     expect(screen.getByText('Hiệu suất dự án')).toBeInTheDocument();
     expect(screen.getByText('Báo cáo khách hàng')).toBeInTheDocument();
     expect(screen.getByText('ACME')).toBeInTheDocument();
