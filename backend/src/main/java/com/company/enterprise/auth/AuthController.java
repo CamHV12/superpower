@@ -5,6 +5,9 @@ import com.company.enterprise.auth.dto.LoginResponse;
 import com.company.enterprise.auth.dto.ChangePasswordRequest;
 import com.company.enterprise.auth.dto.RefreshTokenRequest;
 import com.company.enterprise.auth.dto.RefreshTokenResponse;
+import com.company.enterprise.auth.dto.ForgotPasswordRequest;
+import com.company.enterprise.auth.dto.ForgotPasswordResponse;
+import com.company.enterprise.auth.dto.ResetPasswordRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +27,18 @@ public class AuthController {
     public void changePassword(Authentication authentication,
                                @Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(authentication.getName(), request.currentPassword(), request.newPassword());
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(authService.requestPasswordReset(request.email()));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.token(), request.newPassword());
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/refresh")
