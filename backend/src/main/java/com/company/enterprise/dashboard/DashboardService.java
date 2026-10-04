@@ -10,6 +10,7 @@ import com.company.enterprise.project.repository.ProjectRepository;
 import com.company.enterprise.task.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -97,8 +98,9 @@ public class DashboardService {
 
     private List<DashboardActivity> recentActivities() {
         List<DashboardActivity> activities = new ArrayList<>();
+        PageRequest recentLimit = PageRequest.of(0, 10);
 
-        projectRepository.findRecentActivities().stream()
+        projectRepository.findRecentActivities(recentLimit).stream()
                 .map(row -> new DashboardActivity((java.util.UUID) row[0], "PROJECT", "Dự án mới", (String) row[1], (Instant) row[2]))
                 .forEach(activities::add);
 
