@@ -17,4 +17,9 @@ public class DashboardController {
     public DashboardOverviewResponse overview() {
         return service.overview();
     }
+
+    @GetMapping("/operational")
+    public DashboardOperationalResponse operational() {
+        return service.operational();
+    }
 }
