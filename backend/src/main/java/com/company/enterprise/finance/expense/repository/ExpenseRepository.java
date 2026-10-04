@@ -39,5 +39,6 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID>, JpaSpec
             from Expense e
             order by e.createdAt desc
             """)
-    List<Object[]> findRecentActivities();
+    List<Object[]> findRecentActivities(Pageable pageable);
 }
+import org.springframework.data.domain.Pageable;
