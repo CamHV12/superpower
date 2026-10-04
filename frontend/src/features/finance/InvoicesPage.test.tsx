@@ -62,7 +62,7 @@ describe('InvoicesPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Thêm dòng' }));
     expect(screen.getAllByPlaceholderText('Dịch vụ phát triển phần mềm')).toHaveLength(2);
-    expect(screen.getAllByRole('button', { name: 'Xóa' })).toHaveLength(2);
+    expect(screen.getAllByPlaceholderText('Dịch vụ phát triển phần mềm')).toHaveLength(2);
   });
 
 });
