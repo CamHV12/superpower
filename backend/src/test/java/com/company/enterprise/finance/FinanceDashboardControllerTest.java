@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import com.company.enterprise.security.JwtAuthenticationFilter;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(FinanceDashboardController.class)
 class FinanceDashboardControllerTest {
     @Autowired MockMvc mockMvc;
+    @MockBean JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @MockBean FinanceDashboardService service;
 
