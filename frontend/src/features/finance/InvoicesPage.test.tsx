@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import { InvoicesPage } from './InvoicesPage';
 
 const listInvoices = vi.hoisted(() => vi.fn());
@@ -48,7 +49,7 @@ describe('InvoicesPage', () => {
   it('opens invoice creation form', async () => {
     render(<MemoryRouter><InvoicesPage /></MemoryRouter>);
     await waitFor(() => expect(screen.getByText('INV-001')).toBeInTheDocument());
-    screen.getByRole('button', { name: 'Tạo hóa đơn' }).click();
+    await userEvent.click(screen.getByRole('button', { name: 'Tạo hóa đơn' }));
     expect(screen.getByPlaceholderText('INV-001')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Lưu hóa đơn' })).toBeInTheDocument();
   });
