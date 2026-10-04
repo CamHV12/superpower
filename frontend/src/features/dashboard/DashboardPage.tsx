@@ -16,6 +16,7 @@ export function DashboardPage() {
   const [summary, setSummary] = useState<Awaited<ReturnType<typeof financeService.summary>> | null>(null);
   const [monthly, setMonthly] = useState<Awaited<ReturnType<typeof financeService.monthly>>>([]);
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [operational, setOperational] = useState<Awaited<ReturnType<typeof dashboardService.operational>> | null>(null);
   const [dashboardError, setDashboardError] = useState('');
 
   useEffect(() => {
@@ -26,11 +27,13 @@ export function DashboardPage() {
       financeService.summary(),
       financeService.monthly(months),
       dashboardService.overview(),
+      dashboardService.operational(),
     ])
-      .then(([summaryData, monthlyData, overviewData]) => {
+      .then(([summaryData, monthlyData, overviewData, operationalData]) => {
         setSummary(summaryData);
         setMonthly(monthlyData);
         setOverview(overviewData);
+        setOperational(operationalData);
       })
       .catch(() => setDashboardError('Chưa thể tải đầy đủ dữ liệu dashboard.'));
   }, [period]);
@@ -72,6 +75,60 @@ export function DashboardPage() {
             </Card>
           ))}
         </div>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold">Trạng thái dự án</h2>
+              <p className="text-xs text-slate-500">Phân bổ dự án hiện tại</p>
+            </div>
+            <Badge variant="success">Dữ liệu thật</Badge>
+          </div>
+          <div className="space-y-3">
+            {(operational?.projectStatuses ?? []).map(item => {
+              const total = operational?.projectStatuses.reduce((sum, current) => sum + current.count, 0) || 1;
+              const percent = Math.round(item.count * 100 / total);
+              return (
+                <div key={item.status}>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span>{item.status}</span><span className="font-medium">{item.count}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div className="h-full rounded-full bg-slate-500" style={{ width: `${percent}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        <Card>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold">Trạng thái task</h2>
+              <p className="text-xs text-slate-500">Phân bổ công việc hiện tại</p>
+            </div>
+            <Badge variant="success">Dữ liệu thật</Badge>
+          </div>
+          <div className="space-y-3">
+            {(operational?.taskStatuses ?? []).map(item => {
+              const total = operational?.taskStatuses.reduce((sum, current) => sum + current.count, 0) || 1;
+              const percent = Math.round(item.count * 100 / total);
+              return (
+                <div key={item.status}>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span>{item.status}</span><span className="font-medium">{item.count}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div className="h-full rounded-full bg-slate-500" style={{ width: `${percent}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
       </section>
 
       <section>
