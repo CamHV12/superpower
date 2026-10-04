@@ -13,7 +13,7 @@ import com.company.enterprise.auth.repository.PasswordResetTokenRepository;
 import com.company.enterprise.auth.entity.PasswordResetToken;
 import com.company.enterprise.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
