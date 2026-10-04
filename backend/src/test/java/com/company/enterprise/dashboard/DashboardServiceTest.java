@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import org.springframework.data.domain.PageRequest;
 import java.util.List;
 import java.util.UUID;
 
@@ -119,16 +120,16 @@ class DashboardServiceTest {
         when(taskRepository.countGroupedByStatus()).thenReturn(List.of());
         when(taskRepository.workloadByEmployee(LocalDate.now())).thenReturn(List.of());
         when(projectRepository.kpisByCustomer()).thenReturn(List.of());
-        when(projectRepository.findRecentActivities()).thenReturn(List.of(
+        when(projectRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of(
                 new Object[]{UUID.randomUUID(), "Project old", older}
         ));
-        when(taskRepository.findRecentActivities()).thenReturn(List.of(
+        when(taskRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of(
                 new Object[]{UUID.randomUUID(), "Task new", newer}
         ));
-        when(customerRepository.findRecentActivities()).thenReturn(List.of());
-        when(invoiceRepository.findRecentActivities()).thenReturn(List.of());
-        when(paymentRepository.findRecentActivities()).thenReturn(List.of());
-        when(expenseRepository.findRecentActivities()).thenReturn(List.of());
+        when(customerRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of());
+        when(invoiceRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of());
+        when(paymentRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of());
+        when(expenseRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of());
 
         var result = new DashboardService(employeeRepository, projectRepository, customerRepository, taskRepository,
                 invoiceRepository, paymentRepository, expenseRepository).operational();
