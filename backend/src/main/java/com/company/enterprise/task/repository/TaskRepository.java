@@ -4,7 +4,7 @@ import com.company.enterprise.task.entity.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -46,4 +46,11 @@ public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificat
             order by count(t) desc, t.assignee.fullName asc
             """)
     List<Object[]> workloadByEmployee(@Param("today") LocalDate today);
+
+    @Query("""
+            select t.id, t.title, t.createdAt
+            from Task t
+            order by t.createdAt desc
+            """)
+    List<Object[]> findRecentActivities();
 }
