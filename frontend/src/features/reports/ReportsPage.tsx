@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Badge } from '../../components/ui/Badge';
 import { Card } from '../../components/ui/Card';
-import { getOperationalReport, reportsService, type ReportResponse, type OperationalReport } from './reports.service';
+import { getOperationalReport, getPerformanceReport, reportsService, type ReportResponse, type OperationalReport, type PerformanceReport } from './reports.service';
 
 const formatMoney = (value: number) => new Intl.NumberFormat('vi-VN', {
   style: 'currency',
@@ -18,14 +18,15 @@ export function ReportsPage() {
   const [to, setTo] = useState(toDateInput(now));
   const [report, setReport] = useState<ReportResponse | null>(null);
   const [operational, setOperational] = useState<OperationalReport | null>(null);
+  const [performance, setPerformance] = useState<PerformanceReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const load = () => {
     setLoading(true);
     setError('');
-    Promise.all([reportsService.summary(from, to), getOperationalReport()])
-      .then(([summary, operations]) => { setReport(summary); setOperational(operations); })
+    Promise.all([reportsService.summary(from, to), getOperationalReport(), getPerformanceReport()])
+      .then(([summary, operations, performanceReport]) => { setReport(summary); setOperational(operations); setPerformance(performanceReport); })
       .catch(() => setError('Không thể tải báo cáo.'))
       .finally(() => setLoading(false));
   };
@@ -144,6 +145,33 @@ export function ReportsPage() {
             </div>
           )}
 
+          {performance && (
+            <div className="grid gap-4 xl:grid-cols-2">
+              <Card>
+                <div className="mb-4 flex items-center justify-between"><div><h2 className="font-semibold">Hiệu suất dự án</h2><p className="text-xs text-slate-500">Tiến độ, task và giờ thực tế theo từng dự án.</p></div><Badge variant="success">Dữ liệu thật</Badge></div>
+                <div className="space-y-3">
+                  {performance.projects.slice(0, 10).map(item => (
+                    <div key={item.projectId} className="rounded-xl border border-slate-100 p-3 dark:border-slate-800">
+                      <div className="flex items-center justify-between gap-3"><div><div className="font-medium">{item.code} · {item.name}</div><div className="text-xs text-slate-500">{item.customerName} · {item.status}</div></div><strong>{item.progress}%</strong></div>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-full rounded-full bg-slate-700" style={{ width: item.progress + '%' }} /></div>
+                      <div className="mt-2 text-xs text-slate-500">Task: {item.completedTasks}/{item.taskCount} · Quá hạn: {item.overdueTasks} · Giờ: {item.actualHours}/{item.estimatedHours}h · Ngân sách: {formatMoney(item.budget)}</div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+              <Card>
+                <div className="mb-4 flex items-center justify-between"><div><h2 className="font-semibold">Báo cáo khách hàng</h2><p className="text-xs text-slate-500">Dự án, doanh thu hóa đơn, đã thu và công nợ.</p></div><Badge variant="success">Dữ liệu thật</Badge></div>
+                <div className="space-y-3">
+                  {performance.customers.slice(0, 10).map(item => (
+                    <div key={item.customerId} className="rounded-xl border border-slate-100 p-3 dark:border-slate-800">
+                      <div className="flex items-center justify-between gap-3"><div><div className="font-medium">{item.code} · {item.name}</div><div className="text-xs text-slate-500">{item.activeProjects}/{item.projectCount} project đang hoạt động</div></div><strong>{formatMoney(item.receivableAmount)}</strong></div>
+                      <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-slate-500"><span>Hóa đơn<br/><b className="text-slate-700 dark:text-slate-200">{formatMoney(item.invoicedAmount)}</b></span><span>Đã thu<br/><b className="text-slate-700 dark:text-slate-200">{formatMoney(item.paidAmount)}</b></span><span>Ngân sách<br/><b className="text-slate-700 dark:text-slate-200">{formatMoney(item.projectBudget)}</b></span></div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          )}
           <Card>
             <div className="mb-5 flex items-center justify-between">
               <div>
