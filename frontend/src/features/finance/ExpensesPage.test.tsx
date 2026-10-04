@@ -37,6 +37,24 @@ describe('ExpensesPage', () => {
     expect(listExpenses).toHaveBeenCalled();
   });
 
+  it('applies expense filters through the API', async () => {
+    render(<MemoryRouter><ExpensesPage /></MemoryRouter>);
+
+    await waitFor(() => expect(screen.getByText('Văn phòng')).toBeInTheDocument());
+
+    const search = screen.getByPlaceholderText('Danh mục, nhà cung cấp, ghi chú...');
+    await import('@testing-library/user-event').then(({ default: userEvent }) => userEvent.type(search, 'office'));
+    screen.getByRole('button', { name: 'Lọc' }).click();
+
+    await waitFor(() => {
+      expect(listExpenses).toHaveBeenLastCalledWith(expect.objectContaining({
+        page: 0,
+        size: 10,
+        keyword: 'office',
+      }));
+    });
+  });
+
   it('opens expense form', async () => {
     render(<MemoryRouter><ExpensesPage /></MemoryRouter>);
 
