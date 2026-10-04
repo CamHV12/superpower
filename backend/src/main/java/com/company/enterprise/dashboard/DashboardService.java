@@ -104,23 +104,23 @@ public class DashboardService {
                 .map(row -> new DashboardActivity((java.util.UUID) row[0], "PROJECT", "Dự án mới", (String) row[1], (Instant) row[2]))
                 .forEach(activities::add);
 
-        taskRepository.findRecentActivities().stream()
+        taskRepository.findRecentActivities(recentLimit).stream()
                 .map(row -> new DashboardActivity((java.util.UUID) row[0], "TASK", "Task mới", (String) row[1], (Instant) row[2]))
                 .forEach(activities::add);
 
-        customerRepository.findRecentActivities().stream()
+        customerRepository.findRecentActivities(recentLimit).stream()
                 .map(row -> new DashboardActivity((java.util.UUID) row[0], "CUSTOMER", "Khách hàng mới", (String) row[1], (Instant) row[2]))
                 .forEach(activities::add);
 
-        invoiceRepository.findRecentActivities().stream()
+        invoiceRepository.findRecentActivities(recentLimit).stream()
                 .map(row -> new DashboardActivity((java.util.UUID) row[0], "INVOICE", "Hóa đơn mới", (String) row[1], (Instant) row[3]))
                 .forEach(activities::add);
 
-        paymentRepository.findRecentActivities().stream()
+        paymentRepository.findRecentActivities(recentLimit).stream()
                 .map(row -> new DashboardActivity((java.util.UUID) row[0], "PAYMENT", "Thanh toán mới", "Hóa đơn " + row[1] + " · " + row[2], (Instant) row[3]))
                 .forEach(activities::add);
 
-        expenseRepository.findRecentActivities().stream()
+        expenseRepository.findRecentActivities(recentLimit).stream()
                 .map(row -> new DashboardActivity((java.util.UUID) row[0], "EXPENSE", "Chi phí mới", (String) row[1] + " · " + row[2], (Instant) row[3]))
                 .forEach(activities::add);
 
