@@ -13,6 +13,7 @@ public class ReportOperationalController {
         this.service = service;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping("/operational")
     public ReportOperationalResponse operational() {
         return service.operational();
