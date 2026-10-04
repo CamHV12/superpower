@@ -8,7 +8,7 @@ describe('ErrorState', () => {
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText('Không thể tải dữ liệu')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Thử lại' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Thử lại' })).not.toBeInTheDocument();
   });
 
   it('calls retry when requested', async () => {
