@@ -3,9 +3,9 @@ import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import { ExpensesPage } from './ExpensesPage';
 
-const listExpenses = vi.fn();
-const createExpense = vi.fn();
-const deleteExpense = vi.fn();
+const listExpenses = vi.hoisted(() => vi.fn());
+const createExpense = vi.hoisted(() => vi.fn());
+const deleteExpense = vi.hoisted(() => vi.fn());
 
 vi.mock('./finance.service', () => ({
   financeService: { listExpenses, createExpense, deleteExpense },
