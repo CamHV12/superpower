@@ -16,6 +16,11 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
     boolean existsByInvoiceNumber(String invoiceNumber);
     long countByStatus(com.company.enterprise.finance.invoice.entity.InvoiceStatus status);
 
+    long countByIssueDateBetween(LocalDate from, LocalDate to);
+
+    long countByIssueDateBetweenAndStatus(LocalDate from, LocalDate to,
+                                           com.company.enterprise.finance.invoice.entity.InvoiceStatus status);
+
     @Query("select coalesce(sum(i.totalAmount), 0) from Invoice i where i.issueDate between :from and :to and i.status <> com.company.enterprise.finance.invoice.entity.InvoiceStatus.CANCELLED")
     BigDecimal sumTotalAmountByIssueDateBetween(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
