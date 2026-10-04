@@ -3,12 +3,14 @@ package com.company.enterprise.audit;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.security.core.Authentication;
+import com.company.enterprise.auth.entity.User;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Component
 public class AuditLoggingFilter extends OncePerRequestFilter {
@@ -34,11 +36,15 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 String actorEmail = authentication != null && authentication.isAuthenticated()
                         ? authentication.getName() : null;
+                UUID actorUserId = null;
+                if (authentication != null && authentication.getPrincipal() instanceof User user) {
+                    actorUserId = user.getId();
+                }
 
                 AuditLogService service = serviceProvider.getIfAvailable();
                 if (service != null) {
                     service.record(new AuditLog(
-                        null,
+                        actorUserId,
                         actorEmail,
                         request.getMethod(),
                         request.getRequestURI(),
