@@ -36,13 +36,10 @@ public class UserAdminService {
 
     @Transactional(readOnly = true)
     public Page<UserAdminResponse> findAll(String keyword, Pageable pageable) {
-        Page<User> page = userRepository.findAll(pageable);
-        if (keyword == null || keyword.isBlank()) return page.map(this::toResponse);
-        String q = keyword.trim().toLowerCase(Locale.ROOT);
-        return page.map(this::toResponse).map(r -> r.email().toLowerCase(Locale.ROOT).contains(q)
-                || r.firstName().toLowerCase(Locale.ROOT).contains(q)
-                || r.lastName().toLowerCase(Locale.ROOT).contains(q) ? r : null)
-                .map(r -> r);
+        Page<User> page = keyword == null || keyword.isBlank()
+                ? userRepository.findAll(pageable)
+                : userRepository.search(keyword.trim(), pageable);
+        return page.map(this::toResponse);
     }
 
     public UserAdminResponse create(CreateUserRequest request) {
@@ -63,7 +60,10 @@ public class UserAdminService {
         user.setFirstName(request.firstName().trim());
         user.setLastName(request.lastName().trim());
         user.setEnabled(request.enabled());
-        if (request.roles() != null) user.getRoles().clear(); user.getRoles().addAll(resolveRoles(request.roles()));
+        if (request.roles() != null) {
+            user.getRoles().clear();
+            user.getRoles().addAll(resolveRoles(request.roles()));
+        }
         return toResponse(userRepository.save(user));
     }
 
