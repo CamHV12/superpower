@@ -2,8 +2,11 @@ package com.company.enterprise.security;
 
 import com.company.enterprise.auth.entity.User;
 import com.company.enterprise.auth.repository.UserRepository;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -18,18 +21,16 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        String[] authorities = user.getRoles().stream()
-                .map(role -> "ROLE_" + role.getName())
-                .toArray(String[]::new);
+        List<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> (GrantedAuthority) () -> "ROLE_" + role.getName())
+                .toList();
 
         return new EnterpriseUserPrincipal(
                 user.getId(),
                 user.getEmail(),
                 user.getPasswordHash(),
                 user.isEnabled(),
-                user.getRoles().stream()
-                        .map(role -> (org.springframework.security.core.GrantedAuthority) () -> "ROLE_" + role.getName()
-                        .collect(java.util.stream.Collectors.toList())
+                authorities
         );
     }
 }
