@@ -5,6 +5,9 @@ import com.company.enterprise.auth.dto.LoginResponse;
 import com.company.enterprise.auth.dto.UserSummary;
 import com.company.enterprise.auth.entity.User;
 import com.company.enterprise.auth.repository.UserRepository;
+import com.company.enterprise.auth.repository.RefreshTokenRepository;
+import com.company.enterprise.auth.entity.RefreshToken;
+import com.company.enterprise.auth.dto.RefreshTokenResponse;
 import com.company.enterprise.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationException;
@@ -17,23 +20,32 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.UUID;
 
 @Service
 public class AuthService {
     private static final int MAX_FAILED_LOGIN_ATTEMPTS = 5;
     private static final Duration LOCK_DURATION = Duration.ofMinutes(15);
+    private static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(30);
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository, JwtService jwtService,
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder, RefreshTokenRepository refreshTokenRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @Transactional
@@ -52,17 +64,88 @@ public class AuthService {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalStateException("Authenticated user was not found"));
 
+        issueRefreshToken(user);
         return new LoginResponse(
                 jwtService.generateToken(user),
                 "Bearer",
                 jwtService.getExpirationSeconds(),
-                new UserSummary(
-                        user.getId(),
-                        user.getEmail(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getRoles().stream().map(role -> role.getName()).sorted().toList()
-                )
+                toUserSummary(user)
+        );
+    }
+
+    @Transactional
+    public RefreshTokenResponse refresh(String rawRefreshToken) {
+        RefreshToken stored = refreshTokenRepository.findByTokenHash(hashToken(rawRefreshToken))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
+
+        Instant now = Instant.now();
+        if (!stored.isUsable(now)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token expired or revoked");
+        }
+
+        User user = userRepository.findById(stored.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+        if (!user.isEnabled() || user.isAccountLocked()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User account is unavailable");
+        }
+
+        stored.revoke();
+        refreshTokenRepository.save(stored);
+
+        String newRefreshToken = issueRefreshToken(user);
+        return new RefreshTokenResponse(
+                jwtService.generateToken(user),
+                "Bearer",
+                jwtService.getExpirationSeconds(),
+                newRefreshToken,
+                toUserSummary(user)
+        );
+    }
+
+    @Transactional
+    public void logout(String rawRefreshToken) {
+        refreshTokenRepository.findByTokenHash(hashToken(rawRefreshToken))
+                .ifPresent(token -> {
+                    token.revoke();
+                    refreshTokenRepository.save(token);
+                });
+    }
+
+    private String issueRefreshToken(User user) {
+        byte[] bytes = new byte[48];
+        secureRandom.nextBytes(bytes);
+        String raw = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        RefreshToken token = new RefreshToken(
+                UUID.randomUUID(),
+                user.getId(),
+                hashToken(raw),
+                Instant.now().plus(REFRESH_TOKEN_DURATION)
+        );
+        refreshTokenRepository.save(token);
+        return raw;
+    }
+
+    private String hashToken(String rawToken) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(rawToken.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder(64);
+            for (byte value : digest) {
+                hex.append(String.format("%02x", value));
+            }
+            return hex.toString();
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("SHA-256 is unavailable", ex);
+        }
+    }
+
+    private UserSummary toUserSummary(User user) {
+        return new UserSummary(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getRoles().stream().map(role -> role.getName()).sorted().toList()
         );
     }
 
