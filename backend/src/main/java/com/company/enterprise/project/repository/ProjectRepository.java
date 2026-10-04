@@ -19,4 +19,17 @@ public interface ProjectRepository extends JpaRepository<Project, UUID>, JpaSpec
             group by p.status
             """)
     List<Object[]> countGroupedByStatus();
+
+    @Query("""
+            select p.customer.id,
+                   p.customer.name,
+                   count(p),
+                   sum(case when p.status = com.company.enterprise.project.entity.ProjectStatus.ACTIVE then 1 else 0 end),
+                   coalesce(sum(p.budget), 0)
+            from Project p
+            where p.customer is not null
+            group by p.customer.id, p.customer.name
+            order by count(p) desc, p.customer.name asc
+            """)
+    List<Object[]> kpisByCustomer();
 }
