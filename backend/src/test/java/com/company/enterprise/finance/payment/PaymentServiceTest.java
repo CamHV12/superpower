@@ -42,7 +42,6 @@ class PaymentServiceTest {
         when(paymentRepository.sumAmountByInvoiceId(invoiceId)).thenReturn(new BigDecimal("600000"));
 
         Payment payment = mock(Payment.class);
-        when(payment.getInvoice()).thenReturn(invoice);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         var request = new CreatePaymentRequest(
@@ -85,7 +84,6 @@ class PaymentServiceTest {
         Invoice invoice = mock(Invoice.class);
         UUID invoiceId = UUID.randomUUID();
 
-        when(invoice.getId()).thenReturn(invoiceId);
         when(invoice.getStatus()).thenReturn(InvoiceStatus.SENT);
         when(invoice.getIssueDate()).thenReturn(LocalDate.of(2026, 10, 3));
         when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
@@ -106,7 +104,6 @@ class PaymentServiceTest {
         Invoice invoice = mock(Invoice.class);
         UUID invoiceId = UUID.randomUUID();
 
-        when(invoice.getId()).thenReturn(invoiceId);
         when(invoice.getStatus()).thenReturn(InvoiceStatus.CANCELLED);
         when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
 
