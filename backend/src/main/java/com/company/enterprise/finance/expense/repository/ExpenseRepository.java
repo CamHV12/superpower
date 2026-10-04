@@ -1,6 +1,7 @@
 package com.company.enterprise.finance.expense.repository;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import com.company.enterprise.finance.expense.entity.Expense;
 import com.company.enterprise.finance.expense.entity.ExpenseStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ExpenseRepository extends JpaRepository<Expense, UUID>, JpaSpecificationExecutor<Expense> {
+
+    @Query("select coalesce(sum(e.amount), 0) from Expense e where e.status = com.company.enterprise.finance.expense.entity.ExpenseStatus.RECORDED and e.expenseDate between :from and :to")
+    BigDecimal sumRecordedAmountByExpenseDateBetween(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
     List<Expense> findByStatusAndExpenseDateBetweenOrderByExpenseDateAsc(
             ExpenseStatus status, LocalDate from, LocalDate to);
