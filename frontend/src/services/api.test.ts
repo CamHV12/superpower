@@ -30,6 +30,8 @@ describe('api authentication interceptor', () => {
   beforeEach(async () => {
     vi.resetModules();
     mocks.axiosPost.mockReset();
+    mocks.requestUse.mockClear();
+    mocks.responseUse.mockClear();
     useAuthStore.getState().logout();
 
     const module = await import('./api');
