@@ -77,9 +77,9 @@ describe('InvoiceDetailPage', () => {
     renderPage();
 
     await waitFor(() => expect(screen.getByText('INV-001')).toBeInTheDocument());
-    screen.getByRole('button', { name: 'Ghi nhận thanh toán' }).click();
+    await userEvent.click(screen.getByRole('button', { name: 'Ghi nhận thanh toán' }));
 
-    expect(screen.getByRole('button', { name: 'Xác nhận thanh toán' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Xác nhận thanh toán' })).toBeInTheDocument());
 
     const user = userEvent.setup();
     const amount = screen.getAllByRole('spinbutton')[0];
