@@ -6,6 +6,13 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface LoginResponse {
   accessToken: string;
   tokenType: string;
@@ -24,6 +31,11 @@ export interface RefreshTokenResponse {
 
 export async function login(request: LoginRequest): Promise<LoginResponse> {
   const { data } = await api.post<LoginResponse>('/auth/login', request);
+  return data;
+}
+
+export async function register(request: RegisterRequest): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/register', request);
   return data;
 }
 

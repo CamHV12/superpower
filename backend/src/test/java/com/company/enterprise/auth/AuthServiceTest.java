@@ -2,9 +2,11 @@ package com.company.enterprise.auth;
 
 import com.company.enterprise.auth.dto.LoginRequest;
 import com.company.enterprise.auth.dto.LoginResponse;
+import com.company.enterprise.auth.dto.RegisterRequest;
 import com.company.enterprise.auth.entity.Role;
 import com.company.enterprise.auth.entity.User;
 import com.company.enterprise.auth.repository.UserRepository;
+import com.company.enterprise.auth.repository.RoleRepository;
 import com.company.enterprise.auth.repository.RefreshTokenRepository;
 import com.company.enterprise.auth.repository.PasswordResetTokenRepository;
 import com.company.enterprise.auth.entity.PasswordResetToken;
@@ -34,6 +36,9 @@ class AuthServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
     private JwtService jwtService;
 
     @Mock
@@ -47,6 +52,47 @@ class AuthServiceTest {
 
     @InjectMocks
     private AuthService authService;
+
+    @Test
+    void registerCreatesEmployeeWithEncodedPasswordAndReturnsSession() {
+        Role employeeRole = new Role(UUID.randomUUID(), "EMPLOYEE");
+        when(userRepository.existsByEmailIgnoreCase("new.user@example.com")).thenReturn(false);
+        when(roleRepository.findByNameIgnoreCase("EMPLOYEE")).thenReturn(java.util.Optional.of(employeeRole));
+        when(passwordEncoder.encode("StrongPass123")).thenReturn("bcrypt-hash");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(jwtService.generateToken(any(User.class))).thenReturn("jwt-token");
+        when(jwtService.getExpirationSeconds()).thenReturn(3600L);
+
+        LoginResponse response = authService.register(new RegisterRequest(
+                " New.User@Example.com ", "StrongPass123", "  Nguyen ", " An "
+        ));
+
+        var userCaptor = org.mockito.ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        User created = userCaptor.getValue();
+        assertThat(created.getEmail()).isEqualTo("new.user@example.com");
+        assertThat(created.getPasswordHash()).isEqualTo("bcrypt-hash");
+        assertThat(created.getFirstName()).isEqualTo("Nguyen");
+        assertThat(created.getLastName()).isEqualTo("An");
+        assertThat(created.getRoles()).containsExactly(employeeRole);
+        assertThat(response.accessToken()).isEqualTo("jwt-token");
+        assertThat(response.user().roles()).containsExactly("EMPLOYEE");
+        verify(passwordEncoder).encode("StrongPass123");
+    }
+
+    @Test
+    void registerRejectsAnExistingEmail() {
+        when(userRepository.existsByEmailIgnoreCase("existing@example.com")).thenReturn(true);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> authService.register(new RegisterRequest(
+                "existing@example.com", "StrongPass123", "First", "Last"
+        )))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
+                .hasMessageContaining("409 CONFLICT");
+
+        verifyNoInteractions(roleRepository, passwordEncoder);
+        verify(userRepository, never()).save(any(User.class));
+    }
 
     @Test
     void loginAuthenticatesUserAndReturnsAccessToken() {
@@ -226,4 +272,3 @@ class AuthServiceTest {
     }
 
 }
-

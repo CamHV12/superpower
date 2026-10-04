@@ -1,6 +1,7 @@
 package com.company.enterprise.auth;
 
 import com.company.enterprise.auth.dto.LoginResponse;
+import com.company.enterprise.auth.dto.RegisterRequest;
 import com.company.enterprise.auth.dto.UserSummary;
 import com.company.enterprise.auth.dto.ChangePasswordRequest;
 import com.company.enterprise.auth.dto.ForgotPasswordResponse;
@@ -8,6 +9,7 @@ import com.company.enterprise.security.JwtAuthenticationFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,11 +23,31 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
     @Autowired MockMvc mockMvc;
 
     @MockBean AuthService authService;
     @MockBean JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Test
+    void registerCreatesAccountAndReturnsNoStoreSession() throws Exception {
+        when(authService.register(any())).thenReturn(new LoginResponse(
+                "jwt-token", "Bearer", 3600, "refresh-token",
+                new UserSummary(UUID.randomUUID(), "new.user@example.com", "Nguyen", "An", List.of("EMPLOYEE"))
+        ));
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType("application/json")
+                        .content("""
+                                {"email":"new.user@example.com","password":"StrongPass123","firstName":"Nguyen","lastName":"An"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(jsonPath("$.user.roles[0]").value("EMPLOYEE"));
+
+        verify(authService).register(any(RegisterRequest.class));
+    }
 
     @Test
     void loginReturnsNoStoreHeader() throws Exception {

@@ -5,15 +5,19 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import com.lowagie.text.Document;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
+
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import com.lowagie.text.Table;
 
 @Service
 public class ReportExportService {
@@ -63,39 +67,39 @@ public class ReportExportService {
     public byte[] pdf(LocalDate from, LocalDate to) {
         ReportResponse report = reportService.summary(from, to);
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            Document document = new Document(PageSize.A4);
-            PdfWriter.getInstance(document, out);
-            document.open();
-            document.add(new Paragraph("ENTERPRISE MANAGEMENT REPORT"));
-            document.add(new Paragraph("Period: " + from + " → " + to));
-            document.add(new Paragraph(" "));
-            Table table = new Table(2);
-            table.addCell("Metric");
-            table.addCell("Value");
-            addMetric(table, "Invoiced", report.summary().invoicedAmount());
-            addMetric(table, "Paid", report.summary().paidAmount());
-            addMetric(table, "Expense", report.summary().expenseAmount());
-            addMetric(table, "Receivable", report.summary().receivableAmount());
-            addMetric(table, "Net Cash Flow", report.summary().netCashFlow());
-            addMetric(table, "Invoices", BigDecimal.valueOf(report.summary().invoiceCount()));
-            addMetric(table, "Overdue Invoices", BigDecimal.valueOf(report.summary().overdueInvoiceCount()));
-            addMetric(table, "Projects", BigDecimal.valueOf(report.summary().projectCount()));
-            addMetric(table, "Tasks", BigDecimal.valueOf(report.summary().taskCount()));
-            addMetric(table, "Customers", BigDecimal.valueOf(report.summary().customerCount()));
-            document.add(table);
-            document.add(new Paragraph(" "));
-            document.add(new Paragraph("Monthly"));
-            Table monthly = new Table(5);
-            for (String header : new String[]{"Month", "Invoiced", "Paid", "Expense", "Net Cash Flow"}) monthly.addCell(header);
-            for (ReportMonthlyPoint p : report.monthly()) {
-                monthly.addCell(p.month());
-                monthly.addCell(money(p.invoicedAmount()));
-                monthly.addCell(money(p.paidAmount()));
-                monthly.addCell(money(p.expenseAmount()));
-                monthly.addCell(money(p.netCashFlow()));
+            try (Document document = new Document(PageSize.A4)) {
+                PdfWriter.getInstance(document, out);
+                document.open();
+                document.add(new Paragraph("ENTERPRISE MANAGEMENT REPORT"));
+                document.add(new Paragraph("Period: " + from + " → " + to));
+                document.add(new Paragraph(" "));
+                Table table = new Table(2);
+                table.addCell("Metric");
+                table.addCell("Value");
+                addMetric(table, "Invoiced", report.summary().invoicedAmount());
+                addMetric(table, "Paid", report.summary().paidAmount());
+                addMetric(table, "Expense", report.summary().expenseAmount());
+                addMetric(table, "Receivable", report.summary().receivableAmount());
+                addMetric(table, "Net Cash Flow", report.summary().netCashFlow());
+                addMetric(table, "Invoices", BigDecimal.valueOf(report.summary().invoiceCount()));
+                addMetric(table, "Overdue Invoices", BigDecimal.valueOf(report.summary().overdueInvoiceCount()));
+                addMetric(table, "Projects", BigDecimal.valueOf(report.summary().projectCount()));
+                addMetric(table, "Tasks", BigDecimal.valueOf(report.summary().taskCount()));
+                addMetric(table, "Customers", BigDecimal.valueOf(report.summary().customerCount()));
+                document.add(table);
+                document.add(new Paragraph(" "));
+                document.add(new Paragraph("Monthly"));
+                Table monthly = new Table(5);
+                for (String header : new String[]{"Month", "Invoiced", "Paid", "Expense", "Net Cash Flow"}) monthly.addCell(header);
+                for (ReportMonthlyPoint p : report.monthly()) {
+                    monthly.addCell(p.month());
+                    monthly.addCell(money(p.invoicedAmount()));
+                    monthly.addCell(money(p.paidAmount()));
+                    monthly.addCell(money(p.expenseAmount()));
+                    monthly.addCell(money(p.netCashFlow()));
+                }
+                document.add(monthly);
             }
-            document.add(monthly);
-            document.close();
             return out.toByteArray();
         } catch (Exception e) {
             throw new IllegalStateException("Không thể tạo file PDF báo cáo", e);

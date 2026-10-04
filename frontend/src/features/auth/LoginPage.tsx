@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LockKeyhole, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { login } from '../../services/auth.service';
 import { useAuthStore } from '../../stores/auth.store';
 import { Button } from '../../components/ui/Button';
@@ -66,6 +67,12 @@ export function LoginPage() {
             Đăng nhập
           </Button>
         </form>
+        <p className="mt-6 text-center text-sm text-slate-500">
+          Chưa có tài khoản?{' '}
+          <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-700">
+            Đăng ký
+          </Link>
+        </p>
       </section>
     </main>
   );

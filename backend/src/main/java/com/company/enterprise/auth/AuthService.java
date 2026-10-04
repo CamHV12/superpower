@@ -2,9 +2,12 @@ package com.company.enterprise.auth;
 
 import com.company.enterprise.auth.dto.LoginRequest;
 import com.company.enterprise.auth.dto.LoginResponse;
+import com.company.enterprise.auth.dto.RegisterRequest;
 import com.company.enterprise.auth.dto.UserSummary;
+import com.company.enterprise.auth.entity.Role;
 import com.company.enterprise.auth.entity.User;
 import com.company.enterprise.auth.repository.UserRepository;
+import com.company.enterprise.auth.repository.RoleRepository;
 import com.company.enterprise.auth.repository.RefreshTokenRepository;
 import com.company.enterprise.auth.entity.RefreshToken;
 import com.company.enterprise.auth.dto.RefreshTokenResponse;
@@ -28,6 +31,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.Locale;
+import java.util.Set;
 
 @Service
 public class AuthService {
@@ -38,21 +43,52 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final SecureRandom secureRandom = new SecureRandom();
 
-    public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository, JwtService jwtService,
+    public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository,
+                       RoleRepository roleRepository, JwtService jwtService,
                        PasswordEncoder passwordEncoder, RefreshTokenRepository refreshTokenRepository,
                        PasswordResetTokenRepository passwordResetTokenRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenRepository = refreshTokenRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
+    }
+
+    @Transactional
+    public LoginResponse register(RegisterRequest request) {
+        String email = request.email().trim().toLowerCase(Locale.ROOT);
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already registered");
+        }
+
+        Role employeeRole = roleRepository.findByNameIgnoreCase("EMPLOYEE")
+                .orElseThrow(() -> new IllegalStateException("EMPLOYEE role is missing from the database"));
+        User user = User.builder()
+                .email(email)
+                .passwordHash(passwordEncoder.encode(request.password()))
+                .firstName(request.firstName().trim())
+                .lastName(request.lastName().trim())
+                .roles(Set.of(employeeRole))
+                .build();
+        user = userRepository.save(user);
+
+        String refreshToken = issueRefreshToken(user);
+        return new LoginResponse(
+                jwtService.generateToken(user),
+                "Bearer",
+                jwtService.getExpirationSeconds(),
+                refreshToken,
+                toUserSummary(user)
+        );
     }
 
     @Transactional

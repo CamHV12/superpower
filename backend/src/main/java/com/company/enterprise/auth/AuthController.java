@@ -5,6 +5,7 @@ import com.company.enterprise.auth.dto.LoginResponse;
 import com.company.enterprise.auth.dto.ChangePasswordRequest;
 import com.company.enterprise.auth.dto.RefreshTokenRequest;
 import com.company.enterprise.auth.dto.RefreshTokenResponse;
+import com.company.enterprise.auth.dto.RegisterRequest;
 import com.company.enterprise.auth.dto.ForgotPasswordRequest;
 import com.company.enterprise.auth.dto.ForgotPasswordResponse;
 import com.company.enterprise.auth.dto.ResetPasswordRequest;
@@ -59,5 +60,12 @@ public class AuthController {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(authService.login(request));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<LoginResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .cacheControl(CacheControl.noStore())
+                .body(authService.register(request));
     }
 }
