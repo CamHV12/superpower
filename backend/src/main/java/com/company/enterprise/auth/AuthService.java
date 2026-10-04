@@ -64,11 +64,12 @@ public class AuthService {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalStateException("Authenticated user was not found"));
 
-        issueRefreshToken(user);
+        String refreshToken = issueRefreshToken(user);
         return new LoginResponse(
                 jwtService.generateToken(user),
                 "Bearer",
                 jwtService.getExpirationSeconds(),
+                refreshToken,
                 toUserSummary(user)
         );
     }
