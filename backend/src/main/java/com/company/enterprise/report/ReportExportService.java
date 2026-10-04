@@ -69,7 +69,7 @@ public class ReportExportService {
             document.add(new Paragraph("ENTERPRISE MANAGEMENT REPORT"));
             document.add(new Paragraph("Period: " + from + " → " + to));
             document.add(new Paragraph(" "));
-            Table table = new Table(2);
+            com.lowagie.text.Table table = new com.lowagie.text.Table(2);
             table.addCell("Metric");
             table.addCell("Value");
             addMetric(table, "Invoiced", report.summary().invoicedAmount());
@@ -85,7 +85,7 @@ public class ReportExportService {
             document.add(table);
             document.add(new Paragraph(" "));
             document.add(new Paragraph("Monthly"));
-            Table monthly = new Table(5);
+            com.lowagie.text.Table monthly = new com.lowagie.text.Table(5);
             for (String header : new String[]{"Month", "Invoiced", "Paid", "Expense", "Net Cash Flow"}) monthly.addCell(header);
             for (ReportMonthlyPoint p : report.monthly()) {
                 monthly.addCell(p.month());
@@ -102,7 +102,7 @@ public class ReportExportService {
         }
     }
 
-    private static void addMetric(Table table, String name, BigDecimal value) {
+    private static void addMetric(com.lowagie.text.Table table, String name, BigDecimal value) {
         table.addCell(name);
         table.addCell(money(value));
     }
