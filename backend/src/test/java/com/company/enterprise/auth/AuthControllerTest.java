@@ -3,6 +3,7 @@ package com.company.enterprise.auth;
 import com.company.enterprise.auth.dto.LoginResponse;
 import com.company.enterprise.auth.dto.UserSummary;
 import com.company.enterprise.auth.dto.ChangePasswordRequest;
+import com.company.enterprise.auth.dto.ForgotPasswordResponse;
 import com.company.enterprise.security.JwtAuthenticationFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,4 +86,25 @@ class AuthControllerTest {
 
         verify(authService).changePassword("admin@enterprise.local", "old-password", "new-password");
     }
+    @Test
+    void forgotPasswordReturnsNoStoreHeader() throws Exception {
+        when(authService.requestPasswordReset("admin@enterprise.local"))
+                .thenReturn(new ForgotPasswordResponse("If the account exists", "reset-token"));
+        mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType("application/json")
+                        .content("{\"email\":\"admin@enterprise.local\"}"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(jsonPath("$.message").value("If the account exists"));
+    }
+
+    @Test
+    void resetPasswordReturnsNoContent() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType("application/json")
+                        .content("{\"token\":\"reset-token\",\"newPassword\":\"new-password\"}"))
+                .andExpect(status().isNoContent());
+        verify(authService).resetPassword("reset-token", "new-password");
+    }
+
 }
