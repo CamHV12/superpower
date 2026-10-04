@@ -70,4 +70,20 @@ public class User {
     public String getLastName() { return lastName; }
     public boolean isEnabled() { return enabled; }
     public Set<Role> getRoles() { return roles; }
+    public static Builder builder() { return new Builder(); }
+    public static final class Builder {
+        private String email;
+        private String passwordHash;
+        private String firstName;
+        private String lastName;
+        private boolean enabled = true;
+        private Set<Role> roles = new HashSet<>();
+        public Builder email(String value) { this.email = value; return this; }
+        public Builder passwordHash(String value) { this.passwordHash = value; return this; }
+        public Builder firstName(String value) { this.firstName = value; return this; }
+        public Builder lastName(String value) { this.lastName = value; return this; }
+        public Builder enabled(boolean value) { this.enabled = value; return this; }
+        public Builder roles(Set<Role> value) { this.roles = value; return this; }
+        public User build() { return new User(null, email, passwordHash, firstName, lastName, enabled, roles); }
+    }
 }
