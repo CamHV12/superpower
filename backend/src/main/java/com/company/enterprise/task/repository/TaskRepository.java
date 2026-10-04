@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,7 +23,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificat
               and t.status not in (com.company.enterprise.task.entity.TaskStatus.DONE,
                                    com.company.enterprise.task.entity.TaskStatus.CANCELLED)
             """)
-    long countOverdueOpenTasks(@Param("today") java.time.LocalDate today);
+    long countOverdueOpenTasks(@Param("today") LocalDate today);
 
     @Query("""
             select t.status, count(t)
@@ -30,4 +31,19 @@ public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificat
             group by t.status
             """)
     List<Object[]> countGroupedByStatus();
+
+    @Query("""
+            select t.assignee.id,
+                   t.assignee.fullName,
+                   count(t),
+                   sum(case when t.dueDate < :today then 1 else 0 end),
+                   coalesce(sum(t.estimatedHours), 0),
+                   coalesce(sum(t.actualHours), 0)
+            from Task t
+            where t.status not in (com.company.enterprise.task.entity.TaskStatus.DONE,
+                                   com.company.enterprise.task.entity.TaskStatus.CANCELLED)
+            group by t.assignee.id, t.assignee.fullName
+            order by count(t) desc, t.assignee.fullName asc
+            """)
+    List<Object[]> workloadByEmployee(@Param("today") LocalDate today);
 }
