@@ -1,5 +1,6 @@
 package com.company.enterprise.finance.expense.repository;
 
+import org.springframework.data.domain.Pageable;
 import com.company.enterprise.finance.expense.entity.Expense;
 import com.company.enterprise.finance.expense.entity.ExpenseStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -41,4 +42,3 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID>, JpaSpec
             """)
     List<Object[]> findRecentActivities(Pageable pageable);
 }
-import org.springframework.data.domain.Pageable;
