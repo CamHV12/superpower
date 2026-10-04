@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class DashboardService {
@@ -39,5 +42,20 @@ public class DashboardService {
                 taskRepository.count(),
                 taskRepository.countOverdueOpenTasks(LocalDate.now())
         );
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardOperationalResponse operational() {
+        List<DashboardStatusCount> projects = projectRepository.countGroupedByStatus().stream()
+                .map(row -> new DashboardStatusCount(((ProjectStatus) row[0]).name(), ((Number) row[1]).longValue()))
+                .sorted(Comparator.comparing(DashboardStatusCount::status))
+                .toList();
+
+        List<DashboardStatusCount> tasks = taskRepository.countGroupedByStatus().stream()
+                .map(row -> new DashboardStatusCount(((com.company.enterprise.task.entity.TaskStatus) row[0]).name(), ((Number) row[1]).longValue()))
+                .sorted(Comparator.comparing(DashboardStatusCount::status))
+                .toList();
+
+        return new DashboardOperationalResponse(projects, tasks);
     }
 }
