@@ -1,6 +1,7 @@
 package com.company.enterprise.report;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ public class ReportExportController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="enterprise-report.xlsx")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"enterprise-report.xlsx\")
                 .body(service.excel(from, to));
     }
 
@@ -30,7 +31,7 @@ public class ReportExportController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="enterprise-report.pdf")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"enterprise-report.pdf\")
                 .body(service.pdf(from, to));
     }
 }
