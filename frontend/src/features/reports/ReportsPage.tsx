@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Badge } from '../../components/ui/Badge';
 import { Card } from '../../components/ui/Card';
-import { reportsService, type ReportResponse } from './reports.service';
+import { getOperationalReport, reportsService, type ReportResponse, type OperationalReport } from './reports.service';
 
 const formatMoney = (value: number) => new Intl.NumberFormat('vi-VN', {
   style: 'currency',
@@ -17,14 +17,15 @@ export function ReportsPage() {
   const [from, setFrom] = useState(toDateInput(new Date(now.getFullYear(), now.getMonth() - 5, 1)));
   const [to, setTo] = useState(toDateInput(now));
   const [report, setReport] = useState<ReportResponse | null>(null);
+  const [operational, setOperational] = useState<OperationalReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const load = () => {
     setLoading(true);
     setError('');
-    reportsService.summary(from, to)
-      .then(setReport)
+    Promise.all([reportsService.summary(from, to), getOperationalReport()])
+      .then(([summary, operations]) => { setReport(summary); setOperational(operations); })
       .catch(() => setError('Không thể tải báo cáo.'))
       .finally(() => setLoading(false));
   };
@@ -90,6 +91,58 @@ export function ReportsPage() {
               </Card>
             ))}
           </section>
+
+          {operational && (
+            <div className="grid gap-4 xl:grid-cols-2">
+              <Card>
+                <h2 className="mb-4 font-semibold">Phân bổ trạng thái Project</h2>
+                <div className="space-y-3">
+                  {operational.projectStatuses.map(item => (
+                    <div key={item.status} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-900">
+                      <span>{item.status}</span><strong>{item.count}</strong>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+              <Card>
+                <h2 className="mb-4 font-semibold">Phân bổ trạng thái Task</h2>
+                <div className="space-y-3">
+                  {operational.taskStatuses.map(item => (
+                    <div key={item.status} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-900">
+                      <span>{item.status}</span><strong>{item.count}</strong>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {operational && (
+            <div className="grid gap-4 xl:grid-cols-2">
+              <Card>
+                <h2 className="mb-4 font-semibold">Hiệu suất nhân viên</h2>
+                <div className="space-y-3">
+                  {operational.employeePerformance.slice(0, 10).map(item => (
+                    <div key={item.employeeId} className="rounded-xl border border-slate-100 p-3 dark:border-slate-800">
+                      <div className="flex justify-between"><span className="font-medium">{item.employeeName}</span><span>{item.completedTasks}/{item.totalTasks} task</span></div>
+                      <div className="mt-1 text-xs text-slate-500">Quá hạn: {item.overdueTasks} · Ước tính: {item.estimatedHours}h · Thực tế: {item.actualHours}h</div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+              <Card>
+                <h2 className="mb-4 font-semibold">Hiệu suất khách hàng</h2>
+                <div className="space-y-3">
+                  {operational.customerPerformance.slice(0, 10).map(item => (
+                    <div key={item.customerId} className="flex items-center justify-between rounded-xl border border-slate-100 p-3 dark:border-slate-800">
+                      <div><div className="font-medium">{item.customerName}</div><div className="text-xs text-slate-500">{item.activeProjects}/{item.projects} project đang hoạt động</div></div>
+                      <strong>{formatMoney(item.budget)}</strong>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          )}
 
           <Card>
             <div className="mb-5 flex items-center justify-between">
