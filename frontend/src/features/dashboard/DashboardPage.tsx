@@ -11,6 +11,10 @@ const formatMoney = (value: number) => new Intl.NumberFormat('vi-VN', {
   maximumFractionDigits: 0,
 }).format(value);
 
+const formatHours = (value: number) => new Intl.NumberFormat('vi-VN', {
+  maximumFractionDigits: 1,
+}).format(value);
+
 export function DashboardPage() {
   const [period, setPeriod] = useState('6 tháng gần nhất');
   const [summary, setSummary] = useState<Awaited<ReturnType<typeof financeService.summary>> | null>(null);
@@ -37,6 +41,9 @@ export function DashboardPage() {
       })
       .catch(() => setDashboardError('Chưa thể tải đầy đủ dữ liệu dashboard.'));
   }, [period]);
+
+  const employeeWorkloads = operational?.employeeWorkloads ?? [];
+  const customerKpis = operational?.customerKpis ?? [];
 
   return (
     <div className="space-y-6">
@@ -128,6 +135,69 @@ export function DashboardPage() {
               );
             })}
           </div>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold">Tải công việc nhân sự</h2>
+              <p className="text-xs text-slate-500">Task đang mở và task đã quá hạn theo nhân sự</p>
+            </div>
+            <Badge variant="success">Dữ liệu thật</Badge>
+          </div>
+          {employeeWorkloads.length === 0 ? (
+            <p className="text-sm text-slate-500">Chưa có task đang mở.</p>
+          ) : (
+            <div className="space-y-4">
+              {employeeWorkloads.slice(0, 8).map(item => (
+                <div key={item.employeeId}>
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="font-medium">{item.employeeName}</span>
+                    <span>{item.openTasks} task · {item.overdueTasks} quá hạn</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                    <span>Ước tính {formatHours(item.estimatedHours)} giờ</span>
+                    <span>Thực tế {formatHours(item.actualHours)} giờ</span>
+                  </div>
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div
+                      className="h-full rounded-full bg-slate-500"
+                      style={{ width: `${Math.min(item.openTasks * 10, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        <Card>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold">Hiệu suất theo khách hàng</h2>
+              <p className="text-xs text-slate-500">Số dự án, dự án đang hoạt động và ngân sách</p>
+            </div>
+            <Badge variant="success">Dữ liệu thật</Badge>
+          </div>
+          {customerKpis.length === 0 ? (
+            <p className="text-sm text-slate-500">Chưa có dự án gắn với khách hàng.</p>
+          ) : (
+            <div className="space-y-3">
+              {customerKpis.slice(0, 8).map(item => (
+                <div key={item.customerId} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-medium">{item.customerName}</span>
+                    <span className="text-sm">{item.projectCount} dự án</span>
+                  </div>
+                  <div className="mt-1 text-xs text-slate-500">
+                    {item.activeProjects} đang hoạt động · {formatMoney(item.projectBudget)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
       </section>
 
