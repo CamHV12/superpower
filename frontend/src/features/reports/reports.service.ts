@@ -100,3 +100,20 @@ export async function getPerformanceReport() {
   const response = await api.get<PerformanceReport>('/reports/performance');
   return response.data;
 }
+
+
+export async function downloadReport(format: 'excel' | 'pdf', from: string, to: string) {
+  const response = await api.get<Blob>('/reports/export/' + format, {
+    params: { from, to },
+    responseType: 'blob',
+  });
+  const blob = new Blob([response.data], { type: response.headers['content-type'] });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = format === 'excel' ? 'enterprise-report.xlsx' : 'enterprise-report.pdf';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
