@@ -32,5 +32,6 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
             from Payment p
             order by p.createdAt desc
             """)
-    List<Object[]> findRecentActivities();
+    List<Object[]> findRecentActivities(Pageable pageable);
 }
+import org.springframework.data.domain.Pageable;
