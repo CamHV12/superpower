@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import { ProjectsPage } from './ProjectsPage';
 
 const list = vi.hoisted(() => vi.fn());
@@ -66,8 +67,8 @@ describe('ProjectsPage', () => {
   it('shows create project form when requested', async () => {
     render(<MemoryRouter><ProjectsPage /></MemoryRouter>);
 
-    await waitFor(() => screen.getByText('Enterprise Dashboard'));
-    screen.getByRole('button', { name: 'Tạo dự án' }).click();
+    await waitFor(() => expect(screen.getByText(/Enterprise Dashboard/)).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: 'Tạo dự án' }));
 
     expect(screen.getByText('Mã dự án')).toBeInTheDocument();
     expect(screen.getByText('Tên dự án')).toBeInTheDocument();
