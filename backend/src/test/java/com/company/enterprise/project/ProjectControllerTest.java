@@ -14,6 +14,7 @@ import com.company.enterprise.security.JwtService;
 import com.company.enterprise.security.CustomUserDetailsService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -65,7 +66,7 @@ class ProjectControllerTest {
                 Instant.parse("2026-10-03T08:00:00Z")
         );
 
-        when(projectService.findAll(any(PageRequest.class), any(), any(), any(), any()))
+        when(projectService.findAll(any(Pageable.class), any(), any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(response)));
 
         mockMvc.perform(get("/api/v1/projects")
@@ -118,7 +119,7 @@ class ProjectControllerTest {
         UUID managerId = UUID.randomUUID();
 
         when(projectService.findAll(
-                any(PageRequest.class),
+                any(Pageable.class),
                 eq(ProjectStatus.ACTIVE),
                 eq(ProjectPriority.HIGH),
                 eq(managerId),
