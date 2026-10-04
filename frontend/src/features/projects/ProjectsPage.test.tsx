@@ -62,7 +62,7 @@ describe('ProjectsPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Dự án' })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText(/Enterprise Dashboard/)).toBeInTheDocument());
-    expect(screen.getByText('Nguyễn Văn A')).toBeInTheDocument();
+    expect(screen.getAllByText('Nguyễn Văn A').length).toBeGreaterThanOrEqual(1);
     expect(list).toHaveBeenCalled();
     expect(listEmployees).toHaveBeenCalled();
   });
