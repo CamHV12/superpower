@@ -58,11 +58,11 @@ class DashboardServiceTest {
 
     @Test
     void returnsProjectAndTaskStatusDistribution() {
-        when(projectRepository.countGroupedByStatus()).thenReturn(List.of(
+        when(projectRepository.countGroupedByStatus()).thenReturn(List.<Object[]>of(
                 new Object[]{com.company.enterprise.project.entity.ProjectStatus.ACTIVE, 5L},
                 new Object[]{com.company.enterprise.project.entity.ProjectStatus.COMPLETED, 3L}
         ));
-        when(taskRepository.countGroupedByStatus()).thenReturn(List.of(
+        when(taskRepository.countGroupedByStatus()).thenReturn(List.<Object[]>of(
                 new Object[]{com.company.enterprise.task.entity.TaskStatus.TODO, 10L},
                 new Object[]{com.company.enterprise.task.entity.TaskStatus.DONE, 7L}
         ));
@@ -85,12 +85,12 @@ class DashboardServiceTest {
         UUID employeeId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
 
-        when(projectRepository.countGroupedByStatus()).thenReturn(List.of());
-        when(taskRepository.countGroupedByStatus()).thenReturn(List.of());
-        when(taskRepository.workloadByEmployee(LocalDate.now())).thenReturn(List.of(
+        when(projectRepository.countGroupedByStatus()).thenReturn(List.<Object[]>of());
+        when(taskRepository.countGroupedByStatus()).thenReturn(List.<Object[]>of());
+        when(taskRepository.workloadByEmployee(LocalDate.now())).thenReturn(List.<Object[]>of(
                 new Object[]{employeeId, "Nguyen Van A", 8L, 2L, new BigDecimal("40.00"), new BigDecimal("32.50")}
         ));
-        when(projectRepository.kpisByCustomer()).thenReturn(List.of(
+        when(projectRepository.kpisByCustomer()).thenReturn(List.<Object[]>of(
                 new Object[]{customerId, "ABC Company", 4L, 2L, new BigDecimal("500000000")}
         ));
 
@@ -117,20 +117,20 @@ class DashboardServiceTest {
         Instant older = Instant.parse("2026-10-04T03:00:00Z");
         Instant newer = Instant.parse("2026-10-04T04:00:00Z");
 
-        when(projectRepository.countGroupedByStatus()).thenReturn(List.of());
-        when(taskRepository.countGroupedByStatus()).thenReturn(List.of());
-        when(taskRepository.workloadByEmployee(LocalDate.now())).thenReturn(List.of());
-        when(projectRepository.kpisByCustomer()).thenReturn(List.of());
-        when(projectRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of(
+        when(projectRepository.countGroupedByStatus()).thenReturn(List.<Object[]>of());
+        when(taskRepository.countGroupedByStatus()).thenReturn(List.<Object[]>of());
+        when(taskRepository.workloadByEmployee(LocalDate.now())).thenReturn(List.<Object[]>of());
+        when(projectRepository.kpisByCustomer()).thenReturn(List.<Object[]>of());
+        when(projectRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.<Object[]>of(
                 new Object[]{UUID.randomUUID(), "Project old", older}
         ));
-        when(taskRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of(
+        when(taskRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.<Object[]>of(
                 new Object[]{UUID.randomUUID(), "Task new", newer}
         ));
-        when(customerRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of());
-        when(invoiceRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of());
-        when(paymentRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of());
-        when(expenseRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.of());
+        when(customerRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.<Object[]>of());
+        when(invoiceRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.<Object[]>of());
+        when(paymentRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.<Object[]>of());
+        when(expenseRepository.findRecentActivities(PageRequest.of(0, 10))).thenReturn(List.<Object[]>of());
 
         var result = new DashboardService(employeeRepository, projectRepository, customerRepository, taskRepository,
                 invoiceRepository, paymentRepository, expenseRepository).operational();
