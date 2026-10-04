@@ -49,7 +49,7 @@ describe('InvoicesPage', () => {
     render(<MemoryRouter><InvoicesPage /></MemoryRouter>);
     await waitFor(() => expect(screen.getByText('INV-001')).toBeInTheDocument());
     screen.getByRole('button', { name: 'Tạo hóa đơn' }).click();
-    expect(screen.getByText('Số hóa đơn')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('INV-001')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Lưu hóa đơn' })).toBeInTheDocument();
   });
   it('adds another invoice item row', async () => {
