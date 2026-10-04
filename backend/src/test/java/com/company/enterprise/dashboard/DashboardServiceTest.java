@@ -10,6 +10,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
+import static org.mockito.Mockito.verify;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -42,5 +44,28 @@ class DashboardServiceTest {
         assertThat(result.activeCustomers()).isEqualTo(26);
         assertThat(result.totalTasks()).isEqualTo(80);
         assertThat(result.overdueTasks()).isEqualTo(7);
+    }
+
+    @Test
+    void returnsProjectAndTaskStatusDistribution() {
+        when(projectRepository.countGroupedByStatus()).thenReturn(List.of(
+                new Object[]{com.company.enterprise.project.entity.ProjectStatus.ACTIVE, 5L},
+                new Object[]{com.company.enterprise.project.entity.ProjectStatus.COMPLETED, 3L}
+        ));
+        when(taskRepository.countGroupedByStatus()).thenReturn(List.of(
+                new Object[]{com.company.enterprise.task.entity.TaskStatus.TODO, 10L},
+                new Object[]{com.company.enterprise.task.entity.TaskStatus.DONE, 7L}
+        ));
+
+        var result = new DashboardService(employeeRepository, projectRepository, customerRepository, taskRepository).operational();
+
+        assertThat(result.projectStatuses()).extracting(DashboardStatusCount::status)
+                .containsExactly("ACTIVE", "COMPLETED");
+        assertThat(result.projectStatuses()).extracting(DashboardStatusCount::count)
+                .containsExactly(5L, 3L);
+        assertThat(result.taskStatuses()).extracting(DashboardStatusCount::status)
+                .containsExactly("DONE", "TODO");
+        verify(projectRepository).countGroupedByStatus();
+        verify(taskRepository).countGroupedByStatus();
     }
 }
