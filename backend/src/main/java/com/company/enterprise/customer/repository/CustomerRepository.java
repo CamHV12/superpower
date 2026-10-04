@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface CustomerRepository extends JpaRepository<Customer, UUID>, JpaSpecificationExecutor<Customer> {
     boolean existsByCode(String code);
     boolean existsByTaxCode(String taxCode);
+    long countByActiveTrue();
 }
