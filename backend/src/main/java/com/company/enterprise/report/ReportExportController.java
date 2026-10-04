@@ -22,16 +22,17 @@ public class ReportExportController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"enterprise-report.xlsx\")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=enterprise-report.xlsx")
                 .body(service.excel(from, to));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping(value = "/export/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> pdf(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"enterprise-report.pdf\")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=enterprise-report.pdf")
                 .body(service.pdf(from, to));
     }
 }
