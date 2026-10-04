@@ -20,7 +20,8 @@ class ReportExportServiceTest {
         byte[] bytes = service.excel(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31));
 
         assertTrue(bytes.length > 100);
-        assertEquals((byte) 'P', bytes[0] == 'P' ? (byte) 'P' : bytes[0]);
+        assertEquals('P', (char) bytes[0]);
+        assertEquals('K', (char) bytes[1]);
     }
 
     @Test
