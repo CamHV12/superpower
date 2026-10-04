@@ -38,5 +38,6 @@ public interface ProjectRepository extends JpaRepository<Project, UUID>, JpaSpec
             from Project p
             order by p.createdAt desc
             """)
-    List<Object[]> findRecentActivities();
+    List<Object[]> findRecentActivities(Pageable pageable);
 }
+import org.springframework.data.domain.Pageable;
