@@ -8,6 +8,9 @@ import com.company.enterprise.auth.repository.UserRepository;
 import com.company.enterprise.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +26,14 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository, JwtService jwtService) {
+    public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository, JwtService jwtService,
+                       PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -58,6 +64,23 @@ public class AuthService {
                         user.getRoles().stream().map(role -> role.getName()).sorted().toList()
                 )
         );
+    }
+
+    @Transactional
+    public void changePassword(String email, String currentPassword, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+
+        if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password must be different");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     private void recordFailedLogin(String email) {
