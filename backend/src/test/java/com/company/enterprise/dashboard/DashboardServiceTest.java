@@ -1,6 +1,9 @@
 package com.company.enterprise.dashboard;
 
 import com.company.enterprise.customer.repository.CustomerRepository;
+import com.company.enterprise.finance.expense.repository.ExpenseRepository;
+import com.company.enterprise.finance.invoice.repository.InvoiceRepository;
+import com.company.enterprise.finance.payment.repository.PaymentRepository;
 import com.company.enterprise.employee.repository.EmployeeRepository;
 import com.company.enterprise.project.repository.ProjectRepository;
 import com.company.enterprise.task.repository.TaskRepository;
@@ -10,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +28,9 @@ class DashboardServiceTest {
     @Mock ProjectRepository projectRepository;
     @Mock CustomerRepository customerRepository;
     @Mock TaskRepository taskRepository;
+    @Mock InvoiceRepository invoiceRepository;
+    @Mock PaymentRepository paymentRepository;
+    @Mock ExpenseRepository expenseRepository;
 
     @Test
     void returnsRealOperationalKpis() {
@@ -36,7 +43,7 @@ class DashboardServiceTest {
         when(taskRepository.count()).thenReturn(80L);
         when(taskRepository.countOverdueOpenTasks(LocalDate.now())).thenReturn(7L);
 
-        var result = new DashboardService(employeeRepository, projectRepository, customerRepository, taskRepository).overview();
+        var result = new DashboardService(employeeRepository, projectRepository, customerRepository, taskRepository, invoiceRepository, paymentRepository, expenseRepository).overview();
 
         assertThat(result.totalEmployees()).isEqualTo(20);
         assertThat(result.activeEmployees()).isEqualTo(17);
@@ -101,5 +108,33 @@ class DashboardServiceTest {
 
         verify(taskRepository).workloadByEmployee(LocalDate.now());
         verify(projectRepository).kpisByCustomer();
+    }
+
+    @Test
+    void returnsRecentActivitiesSortedByTime() {
+        Instant older = Instant.parse("2026-10-04T03:00:00Z");
+        Instant newer = Instant.parse("2026-10-04T04:00:00Z");
+
+        when(projectRepository.countGroupedByStatus()).thenReturn(List.of());
+        when(taskRepository.countGroupedByStatus()).thenReturn(List.of());
+        when(taskRepository.workloadByEmployee(LocalDate.now())).thenReturn(List.of());
+        when(projectRepository.kpisByCustomer()).thenReturn(List.of());
+        when(projectRepository.findRecentActivities()).thenReturn(List.of(
+                new Object[]{UUID.randomUUID(), "Project old", older}
+        ));
+        when(taskRepository.findRecentActivities()).thenReturn(List.of(
+                new Object[]{UUID.randomUUID(), "Task new", newer}
+        ));
+        when(customerRepository.findRecentActivities()).thenReturn(List.of());
+        when(invoiceRepository.findRecentActivities()).thenReturn(List.of());
+        when(paymentRepository.findRecentActivities()).thenReturn(List.of());
+        when(expenseRepository.findRecentActivities()).thenReturn(List.of());
+
+        var result = new DashboardService(employeeRepository, projectRepository, customerRepository, taskRepository,
+                invoiceRepository, paymentRepository, expenseRepository).operational();
+
+        assertThat(result.recentActivities()).hasSize(2);
+        assertThat(result.recentActivities().get(0).description()).isEqualTo("Task new");
+        assertThat(result.recentActivities().get(1).description()).isEqualTo("Project old");
     }
 }
