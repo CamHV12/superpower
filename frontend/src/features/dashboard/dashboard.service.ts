@@ -16,9 +16,28 @@ export interface DashboardStatusCount {
   count: number;
 }
 
+export interface DashboardEmployeeWorkload {
+  employeeId: string;
+  employeeName: string;
+  openTasks: number;
+  overdueTasks: number;
+  estimatedHours: number;
+  actualHours: number;
+}
+
+export interface DashboardCustomerKpi {
+  customerId: string;
+  customerName: string;
+  projectCount: number;
+  activeProjects: number;
+  projectBudget: number;
+}
+
 export interface DashboardOperational {
   projectStatuses: DashboardStatusCount[];
   taskStatuses: DashboardStatusCount[];
+  employeeWorkloads: DashboardEmployeeWorkload[];
+  customerKpis: DashboardCustomerKpi[];
 }
 
 export const dashboardService = {
