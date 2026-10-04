@@ -3,9 +3,9 @@ import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import { ProjectsPage } from './ProjectsPage';
 
-const list = vi.fn();
-const listEmployees = vi.fn();
-const create = vi.fn();
+const list = vi.hoisted(() => vi.fn());
+const listEmployees = vi.hoisted(() => vi.fn());
+const create = vi.hoisted(() => vi.fn());
 
 vi.mock('./projects.service', () => ({
   projectsService: {
