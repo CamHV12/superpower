@@ -29,7 +29,7 @@ class AuthControllerTest {
     @Test
     void loginReturnsNoStoreHeader() throws Exception {
         when(authService.login(any())).thenReturn(new LoginResponse(
-                "jwt-token", "Bearer", 3600,
+                "jwt-token", "Bearer", 3600, "refresh-token",
                 new UserSummary(UUID.randomUUID(), "admin@enterprise.local", "Nguyen", "An", List.of("ADMIN"))
         ));
 
@@ -41,6 +41,36 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
                 .andExpect(jsonPath("$.accessToken").value("jwt-token"));
+    }
+
+    @Test
+    void refreshReturnsNoStoreHeader() throws Exception {
+        when(authService.refresh("refresh-token")).thenReturn(new com.company.enterprise.auth.dto.RefreshTokenResponse(
+                "new-access", "Bearer", 3600, "new-refresh",
+                new UserSummary(UUID.randomUUID(), "admin@enterprise.local", "Nguyen", "An", List.of("ADMIN"))
+        ));
+
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType("application/json")
+                        .content("""
+                                {"refreshToken":"refresh-token"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(jsonPath("$.accessToken").value("new-access"))
+                .andExpect(jsonPath("$.refreshToken").value("new-refresh"));
+    }
+
+    @Test
+    void logoutRevokesRefreshToken() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .contentType("application/json")
+                        .content("""
+                                {"refreshToken":"refresh-token"}
+                                """))
+                .andExpect(status().isNoContent());
+
+        verify(authService).logout("refresh-token");
     }
 
     @Test
