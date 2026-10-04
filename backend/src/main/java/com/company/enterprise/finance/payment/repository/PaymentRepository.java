@@ -1,5 +1,6 @@
 package com.company.enterprise.finance.payment.repository;
 
+import org.springframework.data.domain.Pageable;
 import com.company.enterprise.finance.payment.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -34,4 +35,3 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
             """)
     List<Object[]> findRecentActivities(Pageable pageable);
 }
-import org.springframework.data.domain.Pageable;
