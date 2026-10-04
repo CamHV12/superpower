@@ -12,6 +12,9 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public interface ExpenseRepository extends JpaRepository<Expense, UUID>, JpaSpecificationExecutor<Expense> {
+
+    java.util.List<Expense> findByStatusAndExpenseDateBetweenOrderByExpenseDateAsc(
+            ExpenseStatus status, LocalDate from, LocalDate to);
     @Query("""
             select coalesce(sum(e.amount), 0)
             from Expense e
