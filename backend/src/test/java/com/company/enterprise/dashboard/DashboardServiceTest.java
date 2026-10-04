@@ -9,11 +9,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import static org.mockito.Mockito.verify;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,5 +69,37 @@ class DashboardServiceTest {
                 .containsExactly("DONE", "TODO");
         verify(projectRepository).countGroupedByStatus();
         verify(taskRepository).countGroupedByStatus();
+    }
+
+    @Test
+    void returnsEmployeeWorkloadAndCustomerKpis() {
+        UUID employeeId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+
+        when(projectRepository.countGroupedByStatus()).thenReturn(List.of());
+        when(taskRepository.countGroupedByStatus()).thenReturn(List.of());
+        when(taskRepository.workloadByEmployee(LocalDate.now())).thenReturn(List.of(
+                new Object[]{employeeId, "Nguyen Van A", 8L, 2L, new BigDecimal("40.00"), new BigDecimal("32.50")}
+        ));
+        when(projectRepository.kpisByCustomer()).thenReturn(List.of(
+                new Object[]{customerId, "ABC Company", 4L, 2L, new BigDecimal("500000000")}
+        ));
+
+        var result = new DashboardService(employeeRepository, projectRepository, customerRepository, taskRepository).operational();
+
+        assertThat(result.employeeWorkloads()).hasSize(1);
+        assertThat(result.employeeWorkloads().get(0).employeeId()).isEqualTo(employeeId);
+        assertThat(result.employeeWorkloads().get(0).openTasks()).isEqualTo(8);
+        assertThat(result.employeeWorkloads().get(0).overdueTasks()).isEqualTo(2);
+        assertThat(result.employeeWorkloads().get(0).estimatedHours()).isEqualByComparingTo("40.00");
+
+        assertThat(result.customerKpis()).hasSize(1);
+        assertThat(result.customerKpis().get(0).customerId()).isEqualTo(customerId);
+        assertThat(result.customerKpis().get(0).projectCount()).isEqualTo(4);
+        assertThat(result.customerKpis().get(0).activeProjects()).isEqualTo(2);
+        assertThat(result.customerKpis().get(0).projectBudget()).isEqualByComparingTo("500000000");
+
+        verify(taskRepository).workloadByEmployee(LocalDate.now());
+        verify(projectRepository).kpisByCustomer();
     }
 }
