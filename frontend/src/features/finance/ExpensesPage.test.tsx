@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import { ExpensesPage } from './ExpensesPage';
 
 const listExpenses = vi.hoisted(() => vi.fn());
@@ -59,7 +60,7 @@ describe('ExpensesPage', () => {
     render(<MemoryRouter><ExpensesPage /></MemoryRouter>);
 
     await waitFor(() => expect(screen.getByText('Văn phòng')).toBeInTheDocument());
-    screen.getByRole('button', { name: 'Ghi nhận khoản chi' }).click();
+    await userEvent.click(screen.getByRole('button', { name: 'Ghi nhận khoản chi' }));
 
     expect(screen.getAllByText('Danh mục').length).toBeGreaterThanOrEqual(2);
     expect(screen.getByRole('button', { name: 'Lưu khoản chi' })).toBeInTheDocument();
