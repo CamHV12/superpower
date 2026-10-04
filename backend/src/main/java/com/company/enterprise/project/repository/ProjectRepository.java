@@ -32,4 +32,11 @@ public interface ProjectRepository extends JpaRepository<Project, UUID>, JpaSpec
             order by count(p) desc, p.customer.name asc
             """)
     List<Object[]> kpisByCustomer();
+
+    @Query("""
+            select p.id, p.name, p.createdAt
+            from Project p
+            order by p.createdAt desc
+            """)
+    List<Object[]> findRecentActivities();
 }
