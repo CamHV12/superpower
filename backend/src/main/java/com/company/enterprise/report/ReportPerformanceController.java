@@ -13,6 +13,7 @@ public class ReportPerformanceController {
         this.service = service;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping("/performance")
     public ReportPerformanceResponse performance() {
         return service.performance();
