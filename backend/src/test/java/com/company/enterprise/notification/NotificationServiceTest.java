@@ -3,11 +3,9 @@ package com.company.enterprise.notification;
 import com.company.enterprise.auth.entity.User;
 import com.company.enterprise.auth.repository.UserRepository;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.Optional;
 
