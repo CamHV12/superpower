@@ -22,10 +22,12 @@ export function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [operational, setOperational] = useState<Awaited<ReturnType<typeof dashboardService.operational>> | null>(null);
   const [dashboardError, setDashboardError] = useState('');
+  const [dashboardLoading, setDashboardLoading] = useState(true);
 
   useEffect(() => {
     const months = period.startsWith('12') ? 12 : 6;
     setDashboardError('');
+    setDashboardLoading(true);
 
     Promise.all([
       financeService.summary(),
@@ -39,7 +41,8 @@ export function DashboardPage() {
         setOverview(overviewData);
         setOperational(operationalData);
       })
-      .catch(() => setDashboardError('Chưa thể tải đầy đủ dữ liệu dashboard.'));
+      .catch(() => setDashboardError('Chưa thể tải đầy đủ dữ liệu dashboard.'))
+      .finally(() => setDashboardLoading(false));
   }, [period]);
 
   const employeeWorkloads = operational?.employeeWorkloads ?? [];
@@ -57,6 +60,12 @@ export function DashboardPage() {
           <option>12 tháng gần nhất</option>
         </select>
       </div>
+
+      {dashboardLoading && !dashboardError && (
+        <Card>
+          <p className="text-sm text-slate-500">Đang tải dữ liệu dashboard...</p>
+        </Card>
+      )}
 
       {dashboardError && (
         <Card>
@@ -94,7 +103,9 @@ export function DashboardPage() {
             <Badge variant="success">Dữ liệu thật</Badge>
           </div>
           <div className="space-y-3">
-            {(operational?.projectStatuses ?? []).map(item => {
+            {(operational?.projectStatuses ?? []).length === 0 ? (
+              <p className="text-sm text-slate-500">Chưa có dữ liệu trạng thái dự án.</p>
+            ) : (operational?.projectStatuses ?? []).map(item => {
               const total = operational?.projectStatuses.reduce((sum, current) => sum + current.count, 0) || 1;
               const percent = Math.round(item.count * 100 / total);
               return (
@@ -120,7 +131,9 @@ export function DashboardPage() {
             <Badge variant="success">Dữ liệu thật</Badge>
           </div>
           <div className="space-y-3">
-            {(operational?.taskStatuses ?? []).map(item => {
+            {(operational?.taskStatuses ?? []).length === 0 ? (
+              <p className="text-sm text-slate-500">Chưa có dữ liệu trạng thái task.</p>
+            ) : (operational?.taskStatuses ?? []).map(item => {
               const total = operational?.taskStatuses.reduce((sum, current) => sum + current.count, 0) || 1;
               const percent = Math.round(item.count * 100 / total);
               return (
