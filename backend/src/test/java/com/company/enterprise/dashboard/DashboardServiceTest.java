@@ -67,7 +67,8 @@ class DashboardServiceTest {
                 new Object[]{com.company.enterprise.task.entity.TaskStatus.DONE, 7L}
         ));
 
-        var result = new DashboardService(employeeRepository, projectRepository, customerRepository, taskRepository).operational();
+        var result = new DashboardService(employeeRepository, projectRepository, customerRepository, taskRepository,
+                invoiceRepository, paymentRepository, expenseRepository).operational();
 
         assertThat(result.projectStatuses()).extracting(DashboardStatusCount::status)
                 .containsExactly("ACTIVE", "COMPLETED");
