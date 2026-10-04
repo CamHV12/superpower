@@ -24,6 +24,10 @@ public final class ProjectSpecifications {
         return (root, query, cb) -> cb.equal(root.get("manager").get("id"), managerId);
     }
 
+    public static Specification<Project> customerEquals(UUID customerId) {
+        return (root, query, cb) -> cb.equal(root.get("customer").get("id"), customerId);
+    }
+
     public static Specification<Project> keywordContains(String keyword) {
         return (root, query, cb) -> {
             String pattern = "%" + keyword.trim().toLowerCase() + "%";
