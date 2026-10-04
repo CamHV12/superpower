@@ -201,6 +201,31 @@ export function DashboardPage() {
         </Card>
       </section>
 
+      <Card>
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold">Hoạt động gần đây</h2>
+            <p className="text-xs text-slate-500">10 hoạt động mới nhất từ hệ thống</p>
+          </div>
+          <Badge variant="success">Dữ liệu thật</Badge>
+        </div>
+        <div className="space-y-3">
+          {(operational?.recentActivities ?? []).length === 0 ? (
+            <p className="text-sm text-slate-500">Chưa có hoạt động gần đây.</p>
+          ) : (
+            (operational?.recentActivities ?? []).map(activity => (
+              <div key={`${activity.type}-${activity.id}`} className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                <div>
+                  <p className="text-sm font-medium">{activity.title}</p>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{activity.description}</p>
+                </div>
+                <time className="shrink-0 text-xs text-slate-500">{new Date(activity.occurredAt).toLocaleString('vi-VN')}</time>
+              </div>
+            ))
+          )}
+        </div>
+      </Card>
+
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold">Tài chính</h2>
