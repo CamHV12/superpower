@@ -94,7 +94,7 @@ class DashboardServiceTest {
                 new Object[]{customerId, "ABC Company", 4L, 2L, new BigDecimal("500000000")}
         ));
 
-        var result = new DashboardService(employeeRepository, projectRepository, customerRepository, taskRepository).operational();
+        var result = new DashboardService(employeeRepository, projectRepository, customerRepository, taskRepository, invoiceRepository, paymentRepository, expenseRepository).operational();
 
         assertThat(result.employeeWorkloads()).hasSize(1);
         assertThat(result.employeeWorkloads().get(0).employeeId()).isEqualTo(employeeId);
