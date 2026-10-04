@@ -3,7 +3,7 @@ package com.company.enterprise.auth;
 import com.company.enterprise.auth.dto.LoginRequest;
 import com.company.enterprise.auth.dto.LoginResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,6 +17,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(authService.login(request));
     }
 }
