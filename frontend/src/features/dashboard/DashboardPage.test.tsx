@@ -2,10 +2,10 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { DashboardPage } from './DashboardPage';
 
-const summary = vi.fn();
-const monthly = vi.fn();
-const overview = vi.fn();
-const operational = vi.fn();
+const summary = vi.hoisted(() => vi.fn());
+const monthly = vi.hoisted(() => vi.fn());
+const overview = vi.hoisted(() => vi.fn());
+const operational = vi.hoisted(() => vi.fn());
 
 vi.mock('../finance/finance.service', () => ({
   financeService: { summary, monthly },
