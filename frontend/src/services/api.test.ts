@@ -20,17 +20,20 @@ vi.mock('axios', () => ({
   },
 }));
 
-import { api } from './api';
 import { useAuthStore } from '../stores/auth.store';
 
 describe('api authentication interceptor', () => {
   let onRejected: (error: any) => Promise<unknown>;
   let onRequest: (config: any) => any;
+  let api: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.resetModules();
     mocks.axiosPost.mockReset();
     useAuthStore.getState().logout();
 
+    const module = await import('./api');
+    api = module.api;
     const responseRegistration = mocks.responseUse.mock.calls[0];
     onRejected = responseRegistration[1];
     onRequest = mocks.requestUse.mock.calls[0][0];
