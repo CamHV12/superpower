@@ -82,7 +82,7 @@ describe('InvoiceDetailPage', () => {
 
     await waitFor(() => expect(screen.getByRole('button', { name: 'Xác nhận thanh toán' })).toBeInTheDocument());
 
-    const amount = screen.getByLabelText('Số tiền');
+    const amount = screen.getByRole('spinbutton');
     await user.clear(amount);
     await user.type(amount, '6000000');
     expect(amount).toHaveValue(6000000);
