@@ -17,5 +17,6 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID>, JpaSp
             from Customer c
             order by c.createdAt desc
             """)
-    List<Object[]> findRecentActivities();
+    List<Object[]> findRecentActivities(Pageable pageable);
 }
+import org.springframework.data.domain.Pageable;
