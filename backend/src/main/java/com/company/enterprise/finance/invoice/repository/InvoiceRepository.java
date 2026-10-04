@@ -25,6 +25,14 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
     BigDecimal sumTotalAmountByIssueDateBetween(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
     @Query("""
+            select i.customer.id, coalesce(sum(i.totalAmount), 0)
+            from Invoice i
+            where i.status <> com.company.enterprise.finance.invoice.entity.InvoiceStatus.CANCELLED
+            group by i.customer.id
+            """)
+    List<Object[]> sumAmountsByCustomer();
+
+    @Query("""
             select i.id, i.invoiceNumber, i.totalAmount, i.createdAt
             from Invoice i
             order by i.createdAt desc
