@@ -4,9 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { InvoiceDetailPage } from './InvoiceDetailPage';
 
-const getInvoice = vi.fn();
-const listPayments = vi.fn();
-const createPayment = vi.fn();
+const getInvoice = vi.hoisted(() => vi.fn());
+const listPayments = vi.hoisted(() => vi.fn());
+const createPayment = vi.hoisted(() => vi.fn());
 
 vi.mock('./finance.service', () => ({
   financeService: { getInvoice, listPayments, createPayment },
