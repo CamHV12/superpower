@@ -29,7 +29,7 @@ describe('api authentication interceptor', () => {
 
   beforeEach(() => {
     mocks.axiosPost.mockReset();
-    mocks.instance.mockReset();
+    mocks.instance.mockClear();
     useAuthStore.getState().logout();
 
     const responseRegistration = mocks.responseUse.mock.calls[0];
