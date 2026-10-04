@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Ban, Plus } from 'lucide-react';
+import { Ban, Plus, RotateCcw, Search } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { financeService } from './finance.service';
-import type { Expense, PaymentMethod } from './finance.types';
+import type { Expense, ExpenseStatus, PaymentMethod } from './finance.types';
 
 const methods: Record<PaymentMethod, string> = {
   CASH: 'Tiền mặt',
@@ -23,12 +23,32 @@ const money = (n: number) => new Intl.NumberFormat('vi-VN', {
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+type ExpenseFilters = {
+  keyword: string;
+  category: string;
+  status: ExpenseStatus | '';
+  paymentMethod: PaymentMethod | '';
+  fromDate: string;
+  toDate: string;
+};
+
+const emptyFilters: ExpenseFilters = {
+  keyword: '',
+  category: '',
+  status: '',
+  paymentMethod: '',
+  fromDate: '',
+  toDate: '',
+};
+
 export function ExpensesPage() {
   const [items, setItems] = useState<Expense[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [filters, setFilters] = useState<ExpenseFilters>(emptyFilters);
+  const [appliedFilters, setAppliedFilters] = useState<ExpenseFilters>(emptyFilters);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
@@ -41,7 +61,16 @@ export function ExpensesPage() {
     setLoading(true);
     setError('');
     try {
-      const result = await financeService.listExpenses({ page, size: 10 });
+      const result = await financeService.listExpenses({
+        page,
+        size: 10,
+        keyword: appliedFilters.keyword || undefined,
+        category: appliedFilters.category || undefined,
+        status: appliedFilters.status || undefined,
+        paymentMethod: appliedFilters.paymentMethod || undefined,
+        fromDate: appliedFilters.fromDate || undefined,
+        toDate: appliedFilters.toDate || undefined,
+      });
       setItems(result.content);
       setTotalPages(result.totalPages);
     } catch {
@@ -51,7 +80,19 @@ export function ExpensesPage() {
     }
   };
 
-  useEffect(() => { void load(); }, [page]);
+  useEffect(() => { void load(); }, [page, appliedFilters]);
+
+  const applyFilters = (event: FormEvent) => {
+    event.preventDefault();
+    setPage(0);
+    setAppliedFilters({ ...filters });
+  };
+
+  const resetFilters = () => {
+    setPage(0);
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+  };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -99,6 +140,79 @@ export function ExpensesPage() {
         </Button>
       </div>
 
+      <Card>
+        <form onSubmit={applyFilters} className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="xl:col-span-2">
+            <label className="text-sm font-medium">Tìm kiếm</label>
+            <div className="relative mt-1">
+              <Search className="pointer-events-none absolute left-3 top-2.5 size-4 text-slate-400" />
+              <input
+                value={filters.keyword}
+                onChange={e => setFilters({ ...filters, keyword: e.target.value })}
+                placeholder="Danh mục, nhà cung cấp, ghi chú..."
+                className="w-full rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-sm dark:border-slate-700 dark:bg-slate-900"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Danh mục</label>
+            <input
+              value={filters.category}
+              onChange={e => setFilters({ ...filters, category: e.target.value })}
+              placeholder="Văn phòng, Marketing..."
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Trạng thái</label>
+            <select
+              value={filters.status}
+              onChange={e => setFilters({ ...filters, status: e.target.value as ExpenseStatus | '' })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+            >
+              <option value="">Tất cả</option>
+              <option value="RECORDED">Đã ghi nhận</option>
+              <option value="CANCELLED">Đã hủy</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Phương thức</label>
+            <select
+              value={filters.paymentMethod}
+              onChange={e => setFilters({ ...filters, paymentMethod: e.target.value as PaymentMethod | '' })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+            >
+              <option value="">Tất cả</option>
+              {Object.entries(methods).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Từ ngày</label>
+            <input
+              type="date"
+              value={filters.fromDate}
+              onChange={e => setFilters({ ...filters, fromDate: e.target.value })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Đến ngày</label>
+            <input
+              type="date"
+              value={filters.toDate}
+              onChange={e => setFilters({ ...filters, toDate: e.target.value })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+            />
+          </div>
+          <div className="flex items-end gap-2">
+            <Button type="submit"><Search className="size-4" />Lọc</Button>
+            <Button type="button" variant="secondary" onClick={resetFilters}>
+              <RotateCcw className="size-4" />Đặt lại
+            </Button>
+          </div>
+        </form>
+      </Card>
+
       {showForm && (
         <Card>
           <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
@@ -133,7 +247,7 @@ export function ExpensesPage() {
 
       {error ? <Card><p className="text-sm text-red-600">{error}</p></Card> :
        loading ? <Card><p className="text-sm text-slate-500">Đang tải khoản chi...</p></Card> :
-       items.length === 0 ? <EmptyState title="Chưa có khoản chi" description="Ghi nhận khoản chi đầu tiên để theo dõi dòng tiền thực tế." /> :
+       items.length === 0 ? <EmptyState title="Không tìm thấy khoản chi" description="Thử thay đổi bộ lọc hoặc ghi nhận một khoản chi mới." /> :
        <Card className="overflow-hidden p-0">
          <div className="overflow-x-auto">
            <table className="w-full min-w-[850px] text-left text-sm">
