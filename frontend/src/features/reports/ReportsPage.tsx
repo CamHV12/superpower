@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Badge } from '../../components/ui/Badge';
 import { Card } from '../../components/ui/Card';
-import { getOperationalReport, getPerformanceReport, reportsService, type ReportResponse, type OperationalReport, type PerformanceReport } from './reports.service';
+import { downloadReport, getOperationalReport, getPerformanceReport, reportsService, type ReportResponse, type OperationalReport, type PerformanceReport } from './reports.service';
 
 const formatMoney = (value: number) => new Intl.NumberFormat('vi-VN', {
   style: 'currency',
@@ -21,6 +21,7 @@ export function ReportsPage() {
   const [performance, setPerformance] = useState<PerformanceReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [exporting, setExporting] = useState<'excel' | 'pdf' | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -29,6 +30,17 @@ export function ReportsPage() {
       .then(([summary, operations, performanceReport]) => { setReport(summary); setOperational(operations); setPerformance(performanceReport); })
       .catch(() => setError('Không thể tải báo cáo.'))
       .finally(() => setLoading(false));
+  };
+
+  const exportReport = async (format: 'excel' | 'pdf') => {
+    setExporting(format);
+    try {
+      await downloadReport(format, from, to);
+    } catch {
+      setError('Không thể xuất báo cáo.');
+    } finally {
+      setExporting(null);
+    }
   };
 
   useEffect(() => {
@@ -51,7 +63,9 @@ export function ReportsPage() {
             <span className="mb-1 block text-slate-500">Đến ngày</span>
             <input type="date" value={to} onChange={e => setTo(e.target.value)} className="rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-950" />
           </label>
-          <button onClick={load} className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white">Xem báo cáo</button>
+          <button type="button" onClick={load} className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white">Xem báo cáo</button>
+          <button type="button" onClick={() => void exportReport('excel')} disabled={exporting !== null} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium disabled:opacity-50 dark:border-slate-700">{exporting === 'excel' ? 'Đang xuất...' : 'Excel'}</button>
+          <button type="button" onClick={() => void exportReport('pdf')} disabled={exporting !== null} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium disabled:opacity-50 dark:border-slate-700">{exporting === 'pdf' ? 'Đang xuất...' : 'PDF'}</button>
         </div>
       </div>
 
