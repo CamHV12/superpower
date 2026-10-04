@@ -3,7 +3,6 @@ package com.company.enterprise.audit;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.security.core.Authentication;
-import com.company.enterprise.auth.entity.User;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
@@ -37,7 +36,7 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
                 String actorEmail = authentication != null && authentication.isAuthenticated()
                         ? authentication.getName() : null;
                 UUID actorUserId = null;
-                if (authentication != null && authentication.getPrincipal() instanceof User user) {
+                if (authentication != null && authentication.getPrincipal() instanceof com.company.enterprise.security.EnterpriseUserPrincipal user) {
                     actorUserId = user.getId();
                 }
 
