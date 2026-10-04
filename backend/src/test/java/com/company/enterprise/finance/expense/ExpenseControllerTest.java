@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ExpenseController.class)
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
 class ExpenseControllerTest {
     @Autowired MockMvc mockMvc;
     @MockBean JwtAuthenticationFilter jwtAuthenticationFilter;
