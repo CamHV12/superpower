@@ -1,6 +1,8 @@
 package com.company.enterprise.auth.repository;
 
 import com.company.enterprise.auth.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +17,14 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
 
     boolean existsByEmailIgnoreCase(String email);
+
+    @Query("""
+            select u from User u
+             where lower(u.email) like lower(concat('%', :keyword, '%'))
+                or lower(u.firstName) like lower(concat('%', :keyword, '%'))
+                or lower(u.lastName) like lower(concat('%', :keyword, '%'))
+            """)
+    Page<User> search(@Param("keyword") String keyword, Pageable pageable);
 
     @Modifying
     @Transactional
