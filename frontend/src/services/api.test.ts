@@ -4,12 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => {
   const requestUse = vi.fn();
   const responseUse = vi.fn();
-  const instance = vi.fn();
-  instance.interceptors = {
-    request: { use: requestUse },
-    response: { use: responseUse },
-  };
-  instance.post = vi.fn();
+  const instance = Object.assign(vi.fn(), {
+    interceptors: {
+      request: { use: requestUse },
+      response: { use: responseUse },
+    },
+  });
   return { requestUse, responseUse, instance, axiosPost: vi.fn() };
 });
 
