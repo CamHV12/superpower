@@ -177,8 +177,6 @@ class ProjectServiceTest {
         UUID projectId = UUID.randomUUID();
         Project project = mock(Project.class);
 
-        when(projectRepository.findById(projectId)).thenReturn(java.util.Optional.of(project));
-
         assertThatThrownBy(() -> projectService.updateProgress(projectId, 101))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Tiến độ phải nằm trong khoảng từ 0 đến 100");
@@ -255,8 +253,6 @@ class ProjectServiceTest {
                 ProjectPriority.MEDIUM,
                 20
         );
-
-        when(projectRepository.findById(projectId)).thenReturn(java.util.Optional.of(mock(Project.class)));
 
         assertThatThrownBy(() -> projectService.update(projectId, request))
                 .isInstanceOf(IllegalArgumentException.class)
