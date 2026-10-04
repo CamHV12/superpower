@@ -1,5 +1,6 @@
 package com.company.enterprise.finance.invoice.repository;
 
+import org.springframework.data.domain.Pageable;
 import com.company.enterprise.finance.invoice.entity.Invoice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -18,4 +19,3 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
             """)
     List<Object[]> findRecentActivities(Pageable pageable);
 }
-import org.springframework.data.domain.Pageable;
