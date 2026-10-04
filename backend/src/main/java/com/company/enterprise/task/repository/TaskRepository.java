@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,4 +23,11 @@ public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificat
                                    com.company.enterprise.task.entity.TaskStatus.CANCELLED)
             """)
     long countOverdueOpenTasks(@Param("today") java.time.LocalDate today);
+
+    @Query("""
+            select t.status, count(t)
+            from Task t
+            group by t.status
+            """)
+    List<Object[]> countGroupedByStatus();
 }
