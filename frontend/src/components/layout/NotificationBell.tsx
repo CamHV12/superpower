@@ -41,6 +41,8 @@ export function NotificationBell() {
       await notificationService.markAllRead();
       setItems(current => current.map(item => ({ ...item, read: true })));
       setUnreadCount(0);
+    } catch {
+      // Keep the current state when the server rejects the update.
     } finally {
       setLoading(false);
     }
