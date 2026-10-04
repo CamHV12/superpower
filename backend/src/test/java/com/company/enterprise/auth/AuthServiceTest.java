@@ -5,6 +5,7 @@ import com.company.enterprise.auth.dto.LoginResponse;
 import com.company.enterprise.auth.entity.Role;
 import com.company.enterprise.auth.entity.User;
 import com.company.enterprise.auth.repository.UserRepository;
+import com.company.enterprise.auth.repository.RefreshTokenRepository;
 import com.company.enterprise.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +37,9 @@ class AuthServiceTest {
     @Mock
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
     @InjectMocks
     private AuthService authService;
 
@@ -58,6 +62,7 @@ class AuthServiceTest {
         assertThat(response.accessToken()).isEqualTo("jwt-token");
         assertThat(response.tokenType()).isEqualTo("Bearer");
         assertThat(response.expiresIn()).isEqualTo(3600L);
+        assertThat(response.refreshToken()).isNotBlank();
         assertThat(response.user().email()).isEqualTo("admin@enterprise.local");
         assertThat(response.user().roles()).containsExactly("ADMIN");
     }
@@ -126,6 +131,39 @@ class AuthServiceTest {
                 .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
 
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void refreshRotatesRefreshToken() {
+        UUID userId = UUID.randomUUID();
+        User user = new User(userId, "admin@enterprise.local", "hashed", "Nguyễn", "An", true,
+                Set.of(new Role(UUID.randomUUID(), "ADMIN")));
+        com.company.enterprise.auth.entity.RefreshToken token =
+                new com.company.enterprise.auth.entity.RefreshToken(
+                        UUID.randomUUID(), userId, "invalid-test-hash", java.time.Instant.now().plusSeconds(3600));
+
+        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(java.util.Optional.of(token));
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(user));
+        when(jwtService.generateToken(user)).thenReturn("new-access");
+
+        var response = authService.refresh("raw-refresh");
+
+        assertThat(response.accessToken()).isEqualTo("new-access");
+        assertThat(response.refreshToken()).isNotBlank();
+        verify(refreshTokenRepository, atLeast(2)).save(any(com.company.enterprise.auth.entity.RefreshToken.class));
+        assertThat(token.getRevokedAt()).isNotNull();
+    }
+
+    @Test
+    void logoutRevokesExistingRefreshToken() {
+        var token = new com.company.enterprise.auth.entity.RefreshToken(
+                UUID.randomUUID(), UUID.randomUUID(), "hash", java.time.Instant.now().plusSeconds(3600));
+        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(java.util.Optional.of(token));
+
+        authService.logout("raw-refresh");
+
+        assertThat(token.getRevokedAt()).isNotNull();
+        verify(refreshTokenRepository).save(token);
     }
 
 }
