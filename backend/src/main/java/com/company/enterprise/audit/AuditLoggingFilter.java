@@ -4,6 +4,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -11,10 +12,10 @@ import java.io.IOException;
 
 @Component
 public class AuditLoggingFilter extends OncePerRequestFilter {
-    private final AuditLogService service;
+    private final ObjectProvider<AuditLogService> serviceProvider;
 
-    public AuditLoggingFilter(AuditLogService service) {
-        this.service = service;
+    public AuditLoggingFilter(ObjectProvider<AuditLogService> serviceProvider) {
+        this.serviceProvider = serviceProvider;
     }
 
     @Override
@@ -34,6 +35,8 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
                 String actorEmail = authentication != null && authentication.isAuthenticated()
                         ? authentication.getName() : null;
 
+                AuditLogService service = serviceProvider.getIfAvailable();
+                if (service == null) return;
                 service.record(new AuditLog(
                         null,
                         actorEmail,
