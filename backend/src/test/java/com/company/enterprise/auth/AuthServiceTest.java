@@ -33,6 +33,9 @@ class AuthServiceTest {
     @Mock
     private JwtService jwtService;
 
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private AuthService authService;
 
@@ -91,6 +94,38 @@ class AuthServiceTest {
         authService.login(request);
 
         verify(userRepository).resetLoginFailures("admin@enterprise.local");
+    }
+
+    @Test
+    void changePasswordUpdatesHashWhenCurrentPasswordMatches() {
+        UUID userId = UUID.randomUUID();
+        User user = new User(userId, "admin@enterprise.local", "old-hash", "Nguyễn", "An", true,
+                Set.of(new Role(UUID.randomUUID(), "ADMIN")));
+
+        when(userRepository.findByEmail("admin@enterprise.local")).thenReturn(java.util.Optional.of(user));
+        when(passwordEncoder.matches("old-password", "old-hash")).thenReturn(true);
+        when(passwordEncoder.matches("new-password", "old-hash")).thenReturn(false);
+        when(passwordEncoder.encode("new-password")).thenReturn("new-hash");
+
+        authService.changePassword("admin@enterprise.local", "old-password", "new-password");
+
+        assertThat(user.getPasswordHash()).isEqualTo("new-hash");
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void changePasswordRejectsIncorrectCurrentPassword() {
+        User user = new User(UUID.randomUUID(), "admin@enterprise.local", "old-hash", "Nguyễn", "An", true,
+                Set.of(new Role(UUID.randomUUID(), "ADMIN")));
+
+        when(userRepository.findByEmail("admin@enterprise.local")).thenReturn(java.util.Optional.of(user));
+        when(passwordEncoder.matches("wrong", "old-hash")).thenReturn(false);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> authService.changePassword("admin@enterprise.local", "wrong", "new-password"))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
+
+        verify(userRepository, never()).save(any(User.class));
     }
 
 }
