@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Collection;
 
 public interface PaymentRepository extends JpaRepository<Payment, UUID> {
     @Query("select coalesce(sum(p.amount), 0) from Payment p where p.invoice.id = :invoiceId")
@@ -16,4 +17,12 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
     List<Payment> findByInvoiceIdOrderByPaymentDateDesc(UUID invoiceId);
 
     List<Payment> findByPaymentDateBetweenOrderByPaymentDateAsc(LocalDate from, LocalDate to);
+
+    @Query("""
+            select p.invoice.id, coalesce(sum(p.amount), 0)
+            from Payment p
+            where p.invoice.id in :invoiceIds
+            group by p.invoice.id
+            """)
+    List<Object[]> sumAmountByInvoiceIds(@Param("invoiceIds") Collection<UUID> invoiceIds);
 }
