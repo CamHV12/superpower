@@ -1,5 +1,6 @@
 package com.company.enterprise.project.repository;
 
+import org.springframework.data.domain.Pageable;
 import com.company.enterprise.project.entity.Project;
 import com.company.enterprise.project.entity.ProjectStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,4 +41,3 @@ public interface ProjectRepository extends JpaRepository<Project, UUID>, JpaSpec
             """)
     List<Object[]> findRecentActivities(Pageable pageable);
 }
-import org.springframework.data.domain.Pageable;
