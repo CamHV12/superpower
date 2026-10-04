@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.util.Set;
@@ -57,4 +58,40 @@ class AuthServiceTest {
         assertThat(response.user().email()).isEqualTo("admin@enterprise.local");
         assertThat(response.user().roles()).containsExactly("ADMIN");
     }
+    @Test
+    void failedLoginRecordsLockoutAttempt() {
+        LoginRequest request = new LoginRequest("admin@enterprise.local", "wrong");
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new AuthenticationServiceException("invalid credentials"));
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> authService.login(request))
+                .isInstanceOf(AuthenticationServiceException.class);
+
+        verify(userRepository).recordFailedLogin(
+                eq("admin@enterprise.local"),
+                eq(5),
+                any(java.time.Instant.class),
+                any(java.time.Instant.class)
+        );
+        verify(userRepository, never()).resetLoginFailures(anyString());
+    }
+
+    @Test
+    void successfulLoginResetsFailedAttempts() {
+        UUID userId = UUID.randomUUID();
+        User user = new User(userId, "admin@enterprise.local", "hashed", "Nguyễn", "An", true,
+                Set.of(new Role(UUID.randomUUID(), "ADMIN")));
+        LoginRequest request = new LoginRequest("admin@enterprise.local", "secret");
+
+        when(userRepository.findByEmail("admin@enterprise.local")).thenReturn(java.util.Optional.of(user));
+        when(jwtService.generateToken(user)).thenReturn("jwt-token");
+        when(jwtService.getExpirationSeconds()).thenReturn(3600L);
+
+        authService.login(request);
+
+        verify(userRepository).resetLoginFailures("admin@enterprise.local");
+    }
+
 }
+
