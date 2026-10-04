@@ -66,7 +66,7 @@ class ProjectControllerTest {
                 Instant.parse("2026-10-03T08:00:00Z")
         );
 
-        when(projectService.findAll(any(Pageable.class), any(), any(), any(), any()))
+        when(projectService.findAll(any(Pageable.class), any(), any(), any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(response)));
 
         mockMvc.perform(get("/api/v1/projects")
