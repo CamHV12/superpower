@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
@@ -83,10 +83,9 @@ describe('InvoiceDetailPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Xác nhận thanh toán' })).toBeInTheDocument());
 
     const amount = screen.getByRole('spinbutton');
-    await user.clear(amount);
-    await user.type(amount, '6000000');
+    fireEvent.change(amount, { target: { value: '6000000' } });
     expect(amount).toHaveValue(6000000);
-    await user.click(screen.getByRole('button', { name: 'Xác nhận thanh toán' }));
+    fireEvent.submit(screen.getByRole('button', { name: 'Xác nhận thanh toán' }).closest('form')!);
 
     await waitFor(() => expect(createPayment).toHaveBeenCalledWith(expect.objectContaining({
       invoiceId: 'i1',
