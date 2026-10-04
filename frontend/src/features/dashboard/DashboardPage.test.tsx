@@ -5,13 +5,14 @@ import { DashboardPage } from './DashboardPage';
 const summary = vi.fn();
 const monthly = vi.fn();
 const overview = vi.fn();
+const operational = vi.fn();
 
 vi.mock('../finance/finance.service', () => ({
   financeService: { summary, monthly },
 }));
 
 vi.mock('./dashboard.service', () => ({
-  dashboardService: { overview },
+  dashboardService: { overview, operational },
 }));
 
 describe('DashboardPage', () => {
@@ -32,6 +33,13 @@ describe('DashboardPage', () => {
       expenseAmount: 400000,
       netCashFlow: 1100000,
     }]);
+    operational.mockResolvedValue({
+      projectStatuses: [{ status: 'ACTIVE', count: 5 }],
+      taskStatuses: [{ status: 'TODO', count: 10 }],
+      employeeWorkloads: [{ employeeId: 'e1', employeeName: 'Nguyen Van A', openTasks: 3, overdueTasks: 1, estimatedHours: 20, actualHours: 15 }],
+      customerKpis: [{ customerId: 'c1', customerName: 'ABC Company', projectCount: 2, activeProjects: 1, projectBudget: 100000000 }],
+      recentActivities: [{ id: 'p1', type: 'PROJECT', title: 'Dự án mới', description: 'Project Alpha', occurredAt: '2026-10-04T04:00:00Z' }],
+    });
     overview.mockResolvedValue({
       totalEmployees: 20,
       activeEmployees: 17,
@@ -53,6 +61,8 @@ describe('DashboardPage', () => {
     expect(screen.getByText('5 / 12')).toBeInTheDocument();
     expect(screen.getByText('26 / 30')).toBeInTheDocument();
     expect(screen.getByText('7 / 80')).toBeInTheDocument();
+    expect(screen.getByText('Project Alpha')).toBeInTheDocument();
+    expect(screen.getByText('Nguyen Van A')).toBeInTheDocument();
   });
 
   it('loads the selected reporting period from the API', async () => {
