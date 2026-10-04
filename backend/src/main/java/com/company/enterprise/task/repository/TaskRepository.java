@@ -52,6 +52,20 @@ public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificat
     List<Object[]> workloadByEmployee(@Param("today") LocalDate today);
 
     @Query("""
+            select t.assignee.id,
+                   t.assignee.fullName,
+                   count(t),
+                   sum(case when t.status = com.company.enterprise.task.entity.TaskStatus.DONE then 1 else 0 end),
+                   sum(case when t.dueDate < :today and t.status not in (com.company.enterprise.task.entity.TaskStatus.DONE, com.company.enterprise.task.entity.TaskStatus.CANCELLED) then 1 else 0 end),
+                   coalesce(sum(t.estimatedHours), 0),
+                   coalesce(sum(t.actualHours), 0)
+            from Task t
+            group by t.assignee.id, t.assignee.fullName
+            order by count(t) desc, t.assignee.fullName asc
+            """)
+    List<Object[]> performanceByEmployee(@Param("today") LocalDate today);
+
+    @Query("""
             select t.id, t.title, t.createdAt
             from Task t
             order by t.createdAt desc
