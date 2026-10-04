@@ -8,6 +8,9 @@ import com.company.enterprise.auth.repository.UserRepository;
 import com.company.enterprise.auth.repository.RefreshTokenRepository;
 import com.company.enterprise.auth.entity.RefreshToken;
 import com.company.enterprise.auth.dto.RefreshTokenResponse;
+import com.company.enterprise.auth.dto.ForgotPasswordResponse;
+import com.company.enterprise.auth.repository.PasswordResetTokenRepository;
+import com.company.enterprise.auth.entity.PasswordResetToken;
 import com.company.enterprise.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationException;
@@ -31,16 +34,19 @@ public class AuthService {
     private static final int MAX_FAILED_LOGIN_ATTEMPTS = 5;
     private static final Duration LOCK_DURATION = Duration.ofMinutes(15);
     private static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(30);
+    private static final Duration PASSWORD_RESET_DURATION = Duration.ofMinutes(30);
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository, JwtService jwtService,
-                       PasswordEncoder passwordEncoder, RefreshTokenRepository refreshTokenRepository) {
+                       PasswordEncoder passwordEncoder, RefreshTokenRepository refreshTokenRepository,
+                       PasswordResetTokenRepository passwordResetTokenRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
@@ -148,6 +154,35 @@ public class AuthService {
                 user.getLastName(),
                 user.getRoles().stream().map(role -> role.getName()).sorted().toList()
         );
+    }
+
+
+    @Transactional
+    public ForgotPasswordResponse requestPasswordReset(String email) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null || !user.isEnabled()) {
+            return new ForgotPasswordResponse("If the account exists, a password reset token has been created.", null);
+        }
+        byte[] bytes = new byte[48];
+        secureRandom.nextBytes(bytes);
+        String raw = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        passwordResetTokenRepository.save(new PasswordResetToken(UUID.randomUUID(), user.getId(), hashToken(raw), Instant.now().plus(PASSWORD_RESET_DURATION)));
+        return new ForgotPasswordResponse("If the account exists, a password reset token has been created.", raw);
+    }
+
+    @Transactional
+    public void resetPassword(String rawToken, String newPassword) {
+        PasswordResetToken token = passwordResetTokenRepository.findByTokenHash(hashToken(rawToken))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid or expired reset token"));
+        if (!token.isUsable(Instant.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid or expired reset token");
+        }
+        User user = userRepository.findById(token.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid or expired reset token"));
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        token.markUsed();
+        passwordResetTokenRepository.save(token);
     }
 
     @Transactional
