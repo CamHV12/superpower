@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.util.UUID;
 import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 import java.util.Collection;
 
@@ -25,4 +26,11 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
             group by p.invoice.id
             """)
     List<Object[]> sumAmountByInvoiceIds(@Param("invoiceIds") Collection<UUID> invoiceIds);
+
+    @Query("""
+            select p.id, p.invoice.invoiceNumber, p.amount, p.createdAt
+            from Payment p
+            order by p.createdAt desc
+            """)
+    List<Object[]> findRecentActivities();
 }
