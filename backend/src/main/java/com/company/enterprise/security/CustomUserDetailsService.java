@@ -27,9 +27,9 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getEmail(),
                 user.getPasswordHash(),
                 user.isEnabled(),
-                java.util.Arrays.asList(user.getRoles().stream()
-                        .map(role -> (org.springframework.security.core.GrantedAuthority) () -> "ROLE_" + role.getName())
-                        .toArray(org.springframework.security.core.GrantedAuthority[]::new))
+                user.getRoles().stream()
+                        .map(role -> (org.springframework.security.core.GrantedAuthority) () -> "ROLE_" + role.getName()
+                        .collect(java.util.stream.Collectors.toList())
         );
     }
 }
