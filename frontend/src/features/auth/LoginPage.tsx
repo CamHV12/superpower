@@ -25,7 +25,7 @@ export function LoginPage() {
     try {
       setSubmitting(true);
       const response = await login({ email: email.trim(), password });
-      setSession(response.accessToken, response.user);
+      setSession(response.accessToken, response.refreshToken, response.user);
       navigate('/', { replace: true });
     } catch {
       setError('Email hoặc mật khẩu không chính xác.');
