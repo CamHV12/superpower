@@ -22,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .map(role -> "ROLE_" + role.getName())
                 .toArray(String[]::new);
 
-        return User.builder()
+        return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
                 .password(user.getPasswordHash())
                 .disabled(!user.isEnabled())
