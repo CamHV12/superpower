@@ -2,9 +2,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { ReportsPage } from './ReportsPage';
 
-const summary = vi.fn();
-const operational = vi.fn();
-const performance = vi.fn();
+const summary = vi.hoisted(() => vi.fn());
+const operational = vi.hoisted(() => vi.fn());
+const performance = vi.hoisted(() => vi.fn());
 
 vi.mock('./reports.service', () => ({
   reportsService: { summary },
