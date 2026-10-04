@@ -6,5 +6,6 @@ public record DashboardOperationalResponse(
         List<DashboardStatusCount> projectStatuses,
         List<DashboardStatusCount> taskStatuses,
         List<DashboardEmployeeWorkload> employeeWorkloads,
-        List<DashboardCustomerKpi> customerKpis
+        List<DashboardCustomerKpi> customerKpis,
+        List<DashboardActivity> recentActivities
 ) {}
