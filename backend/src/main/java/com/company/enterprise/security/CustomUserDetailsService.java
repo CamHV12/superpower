@@ -22,11 +22,14 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .map(role -> "ROLE_" + role.getName())
                 .toArray(String[]::new);
 
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPasswordHash())
-                .disabled(!user.isEnabled())
-                .authorities(authorities)
-                .build();
+        return new EnterpriseUserPrincipal(
+                user.getId(),
+                user.getEmail(),
+                user.getPasswordHash(),
+                user.isEnabled(),
+                java.util.Arrays.asList(user.getRoles().stream()
+                        .map(role -> (org.springframework.security.core.GrantedAuthority) () -> "ROLE_" + role.getName())
+                        .toArray(org.springframework.security.core.GrantedAuthority[]::new))
+        );
     }
 }
