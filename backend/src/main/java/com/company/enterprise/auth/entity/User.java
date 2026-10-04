@@ -87,6 +87,8 @@ public class User {
         return lockedUntil != null && lockedUntil.isAfter(Instant.now());
     }
     public Set<Role> getRoles() { return roles; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
 
     public static Builder builder() { return new Builder(); }
     public static final class Builder {
