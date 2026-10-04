@@ -85,7 +85,7 @@ describe('InvoiceDetailPage', () => {
     const amount = screen.getAllByRole('spinbutton')[0];
     await user.clear(amount);
     await user.type(amount, '6000000');
-    screen.getByRole('button', { name: 'Xác nhận thanh toán' }).click();
+    await user.click(screen.getByRole('button', { name: 'Xác nhận thanh toán' }));
 
     await waitFor(() => expect(createPayment).toHaveBeenCalledWith(expect.objectContaining({
       invoiceId: 'i1',
