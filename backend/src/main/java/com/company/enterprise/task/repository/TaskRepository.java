@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -54,4 +55,3 @@ public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificat
             """)
     List<Object[]> findRecentActivities(Pageable pageable);
 }
-import org.springframework.data.domain.Pageable;
