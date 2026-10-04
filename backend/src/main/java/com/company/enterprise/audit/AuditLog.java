@@ -52,4 +52,14 @@ public class AuditLog {
         this.userAgent = userAgent;
         this.createdAt = Instant.now();
     }
+    public UUID getId() { return id; }
+    public UUID getActorUserId() { return actorUserId; }
+    public String getActorEmail() { return actorEmail; }
+    public String getAction() { return action; }
+    public String getPath() { return path; }
+    public int getStatusCode() { return statusCode; }
+    public long getDurationMs() { return durationMs; }
+    public String getIpAddress() { return ipAddress; }
+    public String getUserAgent() { return userAgent; }
+    public Instant getCreatedAt() { return createdAt; }
 }
