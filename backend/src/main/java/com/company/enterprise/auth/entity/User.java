@@ -28,6 +28,12 @@ public class User {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(name = "failed_login_attempts", nullable = false)
+    private int failedLoginAttempts;
+
+    @Column(name = "locked_until")
+    private Instant lockedUntil;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -69,7 +75,13 @@ public class User {
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
     public boolean isEnabled() { return enabled; }
+    public int getFailedLoginAttempts() { return failedLoginAttempts; }
+    public Instant getLockedUntil() { return lockedUntil; }
+    public boolean isAccountLocked() {
+        return lockedUntil != null && lockedUntil.isAfter(Instant.now());
+    }
     public Set<Role> getRoles() { return roles; }
+
     public static Builder builder() { return new Builder(); }
     public static final class Builder {
         private String email;
