@@ -82,6 +82,8 @@ public class Customer {
     public String getContactPerson() { return contactPerson; }
     public String getAddress() { return address; }
     public boolean isActive() { return active; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
 
     public void update(String name, CustomerType type, String email, String phone,
                        String taxCode, String contactPerson, String address, boolean active) {
