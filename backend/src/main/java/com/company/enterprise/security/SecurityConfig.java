@@ -35,7 +35,6 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.deny())
-                        .contentTypeOptions(org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.ContentTypeOptionsConfig::disable)
                         .referrerPolicy(referrer -> referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
                         .cacheControl(cache -> {}))
                 .authorizeHttpRequests(auth -> auth
