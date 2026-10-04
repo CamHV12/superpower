@@ -55,6 +55,6 @@ describe('ReportsPage', () => {
     expect(screen.getByText('Hiệu suất dự án')).toBeInTheDocument();
     expect(screen.getByText('Báo cáo khách hàng')).toBeInTheDocument();
     expect(screen.getByText('ACME')).toBeInTheDocument();
-    expect(screen.getByText('Dữ liệu thật')).toBeInTheDocument();
+    expect(screen.getAllByText('Dữ liệu thật').length).toBeGreaterThanOrEqual(2);
   });
 });
