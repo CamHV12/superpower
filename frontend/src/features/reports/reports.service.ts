@@ -62,7 +62,41 @@ export interface OperationalReport {
   }[];
 }
 
+export interface PerformanceReport {
+  projects: {
+    projectId: string;
+    code: string;
+    name: string;
+    customerName: string;
+    status: string;
+    progress: number;
+    budget: number;
+    taskCount: number;
+    completedTasks: number;
+    overdueTasks: number;
+    estimatedHours: number;
+    actualHours: number;
+  }[];
+  customers: {
+    customerId: string;
+    code: string;
+    name: string;
+    active: boolean;
+    projectCount: number;
+    activeProjects: number;
+    projectBudget: number;
+    invoicedAmount: number;
+    paidAmount: number;
+    receivableAmount: number;
+  }[];
+}
+
 export async function getOperationalReport() {
   const response = await api.get<OperationalReport>('/reports/operational');
+  return response.data;
+}
+
+export async function getPerformanceReport() {
+  const response = await api.get<PerformanceReport>('/reports/performance');
   return response.data;
 }
