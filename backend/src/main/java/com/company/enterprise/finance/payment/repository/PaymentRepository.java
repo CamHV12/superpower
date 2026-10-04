@@ -31,6 +31,13 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
     List<Object[]> sumAmountByInvoiceIds(@Param("invoiceIds") Collection<UUID> invoiceIds);
 
     @Query("""
+            select p.invoice.customer.id, coalesce(sum(p.amount), 0)
+            from Payment p
+            group by p.invoice.customer.id
+            """)
+    List<Object[]> sumAmountsByCustomer();
+
+    @Query("""
             select p.id, p.invoice.invoiceNumber, p.amount, p.createdAt
             from Payment p
             order by p.createdAt desc
