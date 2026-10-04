@@ -15,6 +15,9 @@ import java.util.UUID;
 public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificationExecutor<Task> {
     boolean existsByCode(String code);
 
+    long countByStatus(com.company.enterprise.task.entity.TaskStatus status);
+
+
     Optional<Task> findByIdAndProjectId(UUID id, UUID projectId);
 
     @Query("""
