@@ -51,7 +51,7 @@ public class ReportService {
 
         long invoiceCount = countInvoicesInRange(from, to);
         long overdueCount = countOverdueInvoices(from, to);
-        long paidInvoiceCount = invoiceRepository.countByStatus(InvoiceStatus.PAID);
+        long paidInvoiceCount = invoiceRepository.countByIssueDateBetweenAndStatus(from, to, InvoiceStatus.PAID);
 
         long projectCount = projectRepository.count();
         long activeProjectCount = projectRepository.countByStatus(ProjectStatus.ACTIVE);
