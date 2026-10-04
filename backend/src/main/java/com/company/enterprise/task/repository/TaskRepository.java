@@ -52,5 +52,6 @@ public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificat
             from Task t
             order by t.createdAt desc
             """)
-    List<Object[]> findRecentActivities();
+    List<Object[]> findRecentActivities(Pageable pageable);
 }
+import org.springframework.data.domain.Pageable;
