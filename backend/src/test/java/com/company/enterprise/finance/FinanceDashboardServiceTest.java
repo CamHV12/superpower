@@ -38,9 +38,12 @@ class FinanceDashboardServiceTest {
         when(paymentRepository.findByPaymentDateBetweenOrderByPaymentDateAsc(any(), any()))
                 .thenReturn(List.of(payment));
 
-        when(expenseRepository.sumAmountByStatusAndDateBetween(
+        var expense = org.mockito.Mockito.mock(com.company.enterprise.finance.expense.entity.Expense.class);
+        when(expense.getExpenseDate()).thenReturn(LocalDate.now().withDayOfMonth(1));
+        when(expense.getAmount()).thenReturn(new BigDecimal("400000"));
+        when(expenseRepository.findByStatusAndExpenseDateBetweenOrderByExpenseDateAsc(
                 eq(ExpenseStatus.RECORDED), any(), any()))
-                .thenReturn(new BigDecimal("400000"));
+                .thenReturn(List.of(expense));
 
         var result = service.monthly(1);
 
@@ -69,8 +72,10 @@ class FinanceDashboardServiceTest {
         when(openInvoice.getDueDate()).thenReturn(LocalDate.now().minusDays(1));
 
         when(invoiceRepository.findAll()).thenReturn(List.of(paidInvoice, openInvoice));
-        when(paymentRepository.sumAmountByInvoiceId(paidId)).thenReturn(new BigDecimal("1000000"));
-        when(paymentRepository.sumAmountByInvoiceId(openId)).thenReturn(new BigDecimal("500000"));
+        when(paymentRepository.sumAmountByInvoiceIds(any())).thenReturn(List.of(
+                new Object[]{paidId, new BigDecimal("1000000")},
+                new Object[]{openId, new BigDecimal("500000")}
+        ));
         when(expenseRepository.sumAmountByStatus(eq(ExpenseStatus.RECORDED)))
                 .thenReturn(new BigDecimal("400000"));
 
