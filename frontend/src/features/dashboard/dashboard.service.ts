@@ -38,6 +38,15 @@ export interface DashboardOperational {
   taskStatuses: DashboardStatusCount[];
   employeeWorkloads: DashboardEmployeeWorkload[];
   customerKpis: DashboardCustomerKpi[];
+  recentActivities: DashboardActivity[];
+}
+
+export interface DashboardActivity {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  occurredAt: string;
 }
 
 export const dashboardService = {
