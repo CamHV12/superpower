@@ -29,28 +29,28 @@ class ReportPerformanceServiceTest {
         UUID projectId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
 
-        when(projectRepository.performanceReport()).thenReturn(List.of(new Object[]{
+        when(projectRepository.performanceReport()).thenReturn(List.<Object[]>of(new Object[]{
                 projectId, "P-001", "Website", "ACME", "ACTIVE", 75,
                 new BigDecimal("10000"), 4L, 3L, 1L,
                 new BigDecimal("40"), new BigDecimal("35")
         }));
-        when(projectRepository.customerPerformanceReport()).thenReturn(List.of(new Object[]{
+        when(projectRepository.customerPerformanceReport()).thenReturn(List.<Object[]>of(new Object[]{
                 customerId, "C-001", "ACME", true, 2L, 1L, new BigDecimal("15000")
         }));
-        when(invoiceRepository.sumAmountsByCustomer()).thenReturn(List.of(new Object[]{
+        when(invoiceRepository.sumAmountsByCustomer()).thenReturn(List.<Object[]>of(new Object[]{
                 customerId, new BigDecimal("12000")
         }));
-        when(paymentRepository.sumAmountsByCustomer()).thenReturn(List.of(new Object[]{
+        when(paymentRepository.sumAmountsByCustomer()).thenReturn(List.<Object[]>of(new Object[]{
                 customerId, new BigDecimal("9000")
         }));
 
         ReportPerformanceResponse result = service.performance();
 
         assertThat(result.projects()).hasSize(1);
-        assertThat(result.projects().getFirst().completedTasks()).isEqualTo(3);
-        assertThat(result.projects().getFirst().progress()).isEqualTo(75);
-        assertThat(result.customers().getFirst().invoicedAmount()).isEqualByComparingTo("12000");
-        assertThat(result.customers().getFirst().paidAmount()).isEqualByComparingTo("9000");
-        assertThat(result.customers().getFirst().receivableAmount()).isEqualByComparingTo("3000");
+        assertThat(result.projects().get(0).completedTasks()).isEqualTo(3);
+        assertThat(result.projects().get(0).progress()).isEqualTo(75);
+        assertThat(result.customers().get(0).invoicedAmount()).isEqualByComparingTo("12000");
+        assertThat(result.customers().get(0).paidAmount()).isEqualByComparingTo("9000");
+        assertThat(result.customers().get(0).receivableAmount()).isEqualByComparingTo("3000");
     }
 }
