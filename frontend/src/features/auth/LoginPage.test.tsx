@@ -26,6 +26,7 @@ describe('LoginPage', () => {
       accessToken: 'jwt-token',
       tokenType: 'Bearer',
       expiresIn: 3600,
+      refreshToken: 'refresh-token',
       user: {
         id: 'user-1',
         email: 'admin@enterprise.local',
