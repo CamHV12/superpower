@@ -1,7 +1,6 @@
 package com.company.enterprise.finance.expense.repository;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import com.company.enterprise.finance.expense.entity.Expense;
 import com.company.enterprise.finance.expense.entity.ExpenseStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
