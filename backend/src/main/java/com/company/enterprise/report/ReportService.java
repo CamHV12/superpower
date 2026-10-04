@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,20 +103,11 @@ public class ReportService {
     }
 
     private long countInvoicesInRange(LocalDate from, LocalDate to) {
-        return invoiceRepository.findAll((root, query, cb) ->
-                cb.and(
-                        cb.greaterThanOrEqualTo(root.get("issueDate"), from),
-                        cb.lessThanOrEqualTo(root.get("issueDate"), to)
-                )).size();
+        return invoiceRepository.countByIssueDateBetween(from, to);
     }
 
     private long countOverdueInvoices(LocalDate from, LocalDate to) {
-        return invoiceRepository.findAll((root, query, cb) ->
-                cb.and(
-                        cb.greaterThanOrEqualTo(root.get("issueDate"), from),
-                        cb.lessThanOrEqualTo(root.get("issueDate"), to),
-                        cb.equal(root.get("status"), InvoiceStatus.OVERDUE)
-                )).size();
+        return invoiceRepository.countByIssueDateBetweenAndStatus(from, to, InvoiceStatus.OVERDUE);
     }
 
     private void validateRange(LocalDate from, LocalDate to) {
