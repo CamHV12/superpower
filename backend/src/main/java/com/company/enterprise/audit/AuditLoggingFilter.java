@@ -36,8 +36,8 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
                         ? authentication.getName() : null;
 
                 AuditLogService service = serviceProvider.getIfAvailable();
-                if (service == null) return;
-                service.record(new AuditLog(
+                if (service != null) {
+                    service.record(new AuditLog(
                         null,
                         actorEmail,
                         request.getMethod(),
@@ -46,7 +46,8 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
                         (System.nanoTime() - started) / 1_000_000,
                         resolveClientIp(request),
                         truncate(request.getHeader("User-Agent"), 1000)
-                ));
+                    ));
+                }
             } catch (RuntimeException ignored) {
                 // Audit logging must never make a business request fail.
             }
