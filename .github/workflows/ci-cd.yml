@@ -38,13 +38,11 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Run backend tests
-        run: ./mvnw -B test
-        if: ${{ hashFiles('backend/mvnw') != '' }}
+      - name: Verify Maven project
+        run: mvn -B -DskipTests validate
 
-      - name: Run backend tests with Maven
+      - name: Run backend tests
         run: mvn -B test
-        if: ${{ hashFiles('backend/mvnw') == '' }}
 
       - name: Build backend artifact
         run: mvn -B -DskipTests package
